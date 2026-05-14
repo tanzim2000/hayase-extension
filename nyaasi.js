@@ -1,73 +1,74 @@
-export default new class NyaaSi {
-  base = 'https://nyaasi-api.vercel.app/api/search'
+import AbstractSource from './abstract.js'
 
-  async single(query) {
-    const { titles, episode, absoluteEpisodeNumber, exclusions = [], resolution, fetch } = query
+export default new class NyaaSi extends AbstractSource {
+  base = 'https://torrent-search-api-livid.vercel.app/api/nyaasi/'
+
+  /** @type {import('./').SearchFunction} */
+  async single({ titles, episode }) {
     if (!titles?.length) return []
-    return this.search({ titles, episode, absoluteEpisode: absoluteEpisodeNumber, exclusions, resolution, batch: false, fetch })
-  }
 
-  async batch(query) {
-    const { titles, exclusions = [], fetch } = query
-    if (!titles?.length) return []
-    return this.search({ titles, exclusions, batch: true, fetch })
-  }
+    const query = this.buildQuery(titles[0], episode)
+    const url = `${this.base}${encodeURIComponent(query)}`
 
-  async movie(query) {
-    const { titles, resolution, exclusions = [], fetch } = query
-    if (!titles?.length) return []
-    return this.search({ titles, exclusions, resolution, batch: false, fetch })
-  }
-
-  async search({ titles, episode, absoluteEpisode, exclusions, resolution, batch, fetch }) {
-    // Pick best title for the primary query (shortest latin-script)
-    const latin = titles.filter(t => /[a-zA-Z]/.test(t))
-    const pool  = latin.length ? latin : titles
-    const title = pool.reduce((a, b) => a.length <= b.length ? a : b)
-
-    // Build primary query
-    let q = title.replace(/[^\w\s-]/g, ' ').trim()
-    if (!batch && episode != null) q += ' ' + String(episode).padStart(2, '0')
-    if (batch) q += ' Batch'
-    if (resolution) q += ' ' + resolution + 'p'
-
-    // Pass all titles so the server can search them in parallel
-    // Use ||| as a separator since titles can contain commas
-    const extraTitles = pool.filter(t => t !== title).slice(0, 2) // up to 2 extras
-    const titlesParam = extraTitles.length ? extraTitles.join('|||') : ''
-
-    const params = '?q=' + encodeURIComponent(q)
-      + '&title=' + encodeURIComponent(title)
-      + '&category=1_0'
-      + '&batch=' + String(batch)
-      + (episode != null        ? '&episode='         + String(episode)         : '')
-      + (absoluteEpisode != null ? '&absoluteEpisode=' + String(absoluteEpisode) : '')
-      + (resolution             ? '&resolution='      + resolution              : '')
-      + (exclusions.length      ? '&exclusions='      + encodeURIComponent(exclusions.join(',')) : '')
-      + (titlesParam            ? '&titles='          + encodeURIComponent(titlesParam)          : '')
-
-    const res = await fetch(this.base + params)
-    if (!res.ok) return []
-
+    const res = await fetch(url)
     const data = await res.json()
+
     if (!Array.isArray(data)) return []
 
-    return data.map(item => ({
-      title:     item.title     || 'Unknown',
-      link:      item.magnet    || item.hash  || item.link || '',
-      hash:      item.hash      || '',
-      seeders:   Number(item.seeders)   || 0,
-      leechers:  Number(item.leechers)  || 0,
-      downloads: Number(item.downloads) || 0,
-      size:      Number(item.size)      || 0,
-      date:      item.date ? new Date(item.date) : new Date(0),
-      accuracy:  item.accuracy  || 'low',
-    }))
+    return this.map(data)
   }
 
-  async test(options, fetch) {
+  /** @type {import('./').SearchFunction} */
+  batch = this.single
+  movie = this.single
+
+  buildQuery(title, episode) {
+    let query = title.replace(/[^\w\s-]/g, ' ').trim()
+    if (episode) query += ` ${episode.toString().padStart(2, '0')}`
+    return query
+  }
+
+  map(data) {
+    return data.map(item => {
+      const hash = item.Magnet?.match(/btih:([a-fA-F0-9]+)/)?.[1] || ''
+
+      return {
+        title: item.Name || '',
+        link: item.Magnet || '',
+        hash,
+        seeders: parseInt(item.Seeders || '0'),
+        leechers: parseInt(item.Leechers || '0'),
+        downloads: parseInt(item.Downloads || '0'),
+        size: this.parseSize(item.Size),
+        date: new Date(item.DateUploaded),
+        verified: false,
+        type: 'alt',
+        accuracy: 'medium'
+      }
+    })
+  }
+
+  parseSize(sizeStr) {
+    const match = sizeStr.match(/([\d.]+)\s*(KiB|MiB|GiB|KB|MB|GB)/i)
+    if (!match) return 0
+
+    const value = parseFloat(match[1])
+    const unit = match[2].toUpperCase()
+
+    switch (unit) {
+      case 'KIB':
+      case 'KB': return value * 1024
+      case 'MIB':
+      case 'MB': return value * 1024 * 1024
+      case 'GIB':
+      case 'GB': return value * 1024 * 1024 * 1024
+      default: return 0
+    }
+  }
+
+  async test() {
     try {
-      const res = await fetch(this.base + '?q=test&category=1_0')
+      const res = await fetch(this.base + 'one piece')
       return res.ok
     } catch {
       return false
