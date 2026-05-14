@@ -20,7 +20,6 @@ on:
       # Only trigger when these files change — no point rebuilding for README edits
       - 'src/**'
       - 'package.json'
-      - 'package-lock.json'
       - 'build.mjs'
       - '.github/workflows/build.yml'
   
@@ -47,7 +46,7 @@ jobs:
 
       # Step 3 — Install esbuild (reads package.json devDependencies)
       # npm ci is like npm install but faster and stricter — good for CI
-      - run: npm ci
+      - run: npm install
 
       # Step 4 — Run the build script → generates dist/*.js
       - run: npm run build
