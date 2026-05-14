@@ -1,0 +1,78 @@
+[
+  {
+    "name": "Seadex",
+    "id": "seadex",
+    "version": "0.0.2",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "US"
+    ],
+    "icon": "https://releases.moe/favicon.png",
+    "update": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/index.json",
+    "code": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/seadex.js"
+  },
+  {
+    "name": "AnimeTosho",
+    "id": "animetosho",
+    "version": "0.0.3",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "US"
+    ],
+    "icon": "https://animetosho.org/inc/favicon.ico",
+    "update": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/index.json",
+    "code": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/animetosho.js"
+  },
+  {
+    "name": "SubsPlease",
+    "id": "subsplease",
+    "version": "1.0.0",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "US"
+    ],
+    "icon": "https://subsplease.org/favicon.ico",
+    "update": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/index.json",
+    "code": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/subsplease.js"
+  },
+  {
+    "name": "Tokyo Toshokan",
+    "id": "tokyotosho",
+    "version": "1.0.0",
+    "type": "torrent",
+    "accuracy": "medium",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "US"
+    ],
+    "icon": "https://www.tokyotosho.info/favicon.ico",
+    "update": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/index.json",
+    "code": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/tokyotosho.js"
+  },
+  {
+    "name": "Nyaa",
+    "id": "nyaasi",
+    "version": "0.0.6",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "US"
+    ],
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/index.json",
+    "code": "https://gitlab.com/storage5943018/hayase-extensions/-/raw/main/nyaasi.js"
+  }
+
+]
