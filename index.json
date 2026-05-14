@@ -1,15 +1,17 @@
 [
 	{
+		"id": "tanzim.extension.nyaasi",
 		"name": "Nyaa",
-		"id": "nyaasi",
-		"version": "2.0",
+		"version": "1.0.0",
 		"type": "torrent",
 		"accuracy": "high",
+		"updatePeers": true,
 		"ratio": 0,
 		"media": "sub",
 		"languages": ["US"],
+		"nsfw": false,
 		"icon": "https://nyaa.si/static/favicon.png",
-		"update": "gh:Tanzim2000/hayase-extensions",
-		"code": "gh:Tanzim2000/hayase-extensions/nyaasi.js"
+		"update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extensions/main/index.json",
+		"code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extensions/main/nyaasi.js"
 	}
 ]
