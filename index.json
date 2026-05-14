@@ -4,7 +4,7 @@
     "name": "Nyaa",
     "id": "tanzim.nyaasi",
     "version": "1.0.0",
-    "description": "Search Nyaa.si directly via its RSS feed — anime torrents with infoHash extraction.",
+    "description": "Search Nyaa.si directly via its RSS feed - anime torrents with infoHash extraction.",
     "type": "torrent",
     "accuracy": "high",
     "updatePeers": true,
@@ -32,5 +32,22 @@
         "default": "0"
       }
     }
+  },
+  {
+    "manifestVersion": 2,
+    "name": "SeaDex",
+    "id": "tanzim.seadex",
+    "version": "1.0.0",
+    "description": "SeaDex curation layer (releases.moe) - community-picked best and alt anime releases by AniList ID.",
+    "type": "torrent",
+    "accuracy": "high",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "sub",
+    "languages": ["US", "JP"],
+    "url": "aHR0cHM6Ly9yZWxlYXNlcy5tb2U=",
+    "icon": "https://releases.moe/favicon.png",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/seadex.js"
   }
 ]
