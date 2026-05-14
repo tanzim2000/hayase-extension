@@ -104,7 +104,7 @@
     "media": "sub",
     "languages": ["US"],
     "url": "aHR0cHM6Ly9zdWJzcGxlYXNlLm9yZw==",
-    "icon": "https://subsplease.org/wp-content/uploads/2020/05/cropped-cropped-icon-32x32.png",
+    "icon": "https://subsplease.org/favicon.ico"
     "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
     "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/subsplease.js",
     "options": {
