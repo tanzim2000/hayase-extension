@@ -1,0 +1,15 @@
+{
+  "name": "hayase-extension",
+  "version": "2.0.0",
+  "description": "Hayase extensions by Tanzim2000",
+  "private": true,
+  "type": "module",
+  "main": "index.json",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
