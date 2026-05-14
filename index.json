@@ -1,17 +1,36 @@
 [
-	{
-		"id": "tanzim.extension.nyaasi",
-		"name": "Nyaa",
-		"version": "1.0.0",
-		"type": "torrent",
-		"accuracy": "high",
-		"updatePeers": true,
-		"ratio": 0,
-		"media": "sub",
-		"languages": ["US"],
-		"nsfw": false,
-		"icon": "https://nyaa.si/static/favicon.png",
-		"update": "https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/index.json",
-		"code": "https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/nyaasi.js"
-	}
+  {
+    "manifestVersion": 2,
+    "name": "Nyaa",
+    "id": "tanzim.nyaasi",
+    "version": "1.0.0",
+    "description": "Search Nyaa.si directly via its RSS feed — anime torrents with infoHash extraction.",
+    "type": "torrent",
+    "accuracy": "high",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "sub",
+    "languages": ["US", "JP"],
+    "url": "aHR0cHM6Ly9ueWFhLnNp",
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/nyaasi.js",
+    "options": {
+      "domain": {
+        "type": "string",
+        "description": "Nyaa base URL. Change to a mirror (e.g. https://nyaa.land) if nyaa.si is blocked.",
+        "default": "https://nyaa.si"
+      },
+      "category": {
+        "type": "string",
+        "description": "Nyaa category. 1_2 = Anime English, 1_3 = Non-English, 1_4 = Raw, 0_0 = All.",
+        "default": "1_2"
+      },
+      "filter": {
+        "type": "string",
+        "description": "Quality filter. 0 = no filter, 1 = no remakes, 2 = trusted only.",
+        "default": "0"
+      }
+    }
+  }
 ]
