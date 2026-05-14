@@ -4,7 +4,7 @@
     "name": "Nyaa",
     "id": "tanzim.nyaasi",
     "version": "2.0.0",
-    "description": "Search Nyaa.si directly via its RSS feed - anime torrents with infoHash extraction.",
+    "description": "Search Nyaa.si directly via its RSS feed — anime torrents with infoHash extraction.",
     "type": "torrent",
     "accuracy": "high",
     "updatePeers": true,
@@ -38,7 +38,7 @@
     "name": "SeaDex",
     "id": "tanzim.seadex",
     "version": "2.5.0",
-    "description": "SeaDex curation layer (releases.moe) - community-picked best and alt anime releases by AniList ID.",
+    "description": "SeaDex curation layer (releases.moe) — community-picked best and alt anime releases by AniList ID.",
     "type": "torrent",
     "accuracy": "high",
     "updatePeers": true,
@@ -49,5 +49,29 @@
     "icon": "https://releases.moe/favicon.png",
     "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
     "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/seadex.js"
+  },
+  {
+    "manifestVersion": 2,
+    "name": "Tokyo Toshokan",
+    "id": "tanzim.tokyotosho",
+    "version": "2.0.0",
+    "description": "Tokyo Toshokan (tokyotosho.info) — one of the oldest anime indexes. Great for older shows.",
+    "type": "torrent",
+    "accuracy": "medium",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "sub",
+    "languages": ["US", "JP"],
+    "url": "aHR0cHM6Ly93d3cudG9reW90b3Nob2thbi5pbmZv",
+    "icon": "https://www.tokyotosho.info/favicon.ico",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/tokyotosho.js",
+    "options": {
+      "type": {
+        "type": "string",
+        "description": "Content type filter. 1 = Anime only, 4 = Hentai only, 0 = All categories.",
+        "default": "1"
+      }
+    }
   }
 ]
