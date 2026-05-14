@@ -11,7 +11,7 @@
 		"languages": ["US"],
 		"nsfw": false,
 		"icon": "https://nyaa.si/static/favicon.png",
-		"update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/main/index.json",
+		"update": "https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/index.json",
 		"code": "https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/nyaasi.js"
 	}
 ]
