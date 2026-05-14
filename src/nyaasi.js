@@ -1,23 +1,31 @@
-import AbstractSource from './abstract.js'
+// nyaasi.js — Nyaa.si torrent extension for Hayase
+//
+// Searches Nyaa.si directly via its RSS feed.
+// No third-party proxies — talks to nyaa.si directly.
+//
+// Features:
+//   - Direct RSS feed parsing (no proxy dependency)
+//   - Resolution filtering
+//   - Episode number matching
+//   - Title fallback chain (tries multiple title variants)
+//   - Retry logic with exponential backoff
+//   - Exclusion keyword filtering
+//   - Batch detection
+//   - Configurable domain, category, filter via Hayase options
+//   - Debug logging (set DEBUG_MODE = true to enable)
 
 // ─── Debug ────────────────────────────────────────────────────────────────────
+// Set to true to enable detailed logging in Hayase's DevTools console (Ctrl+Shift+I)
+// Set back to false before publishing
 const DEBUG_MODE = false
 
-/**
- * Structured logger. All output is prefixed with [NyaaSi] and a timestamp.
- * Set DEBUG_MODE = true to enable. Safe to ship with DEBUG_MODE = false —
- * zero overhead when disabled.
- */
 const log = {
-  _fmt: (level, msg, data) => {
+  _fmt (level, msg, data) {
     if (!DEBUG_MODE) return
     const ts = new Date().toISOString()
     const prefix = `[NyaaSi][${ts}][${level}]`
-    if (data !== undefined) {
-      console[level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'log'](prefix, msg, data)
-    } else {
-      console[level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'log'](prefix, msg)
-    }
+    const fn = level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'log'
+    data !== undefined ? console[fn](prefix, msg, data) : console[fn](prefix, msg)
   },
   info:  (msg, data) => log._fmt('INFO',  msg, data),
   warn:  (msg, data) => log._fmt('WARN',  msg, data),
@@ -26,25 +34,21 @@ const log = {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Nyaa category IDs
-const CAT_ANIME_ENGLISH = '1_2'
-const CAT_ANIME_RAW = '1_4'
-const CAT_ANIME_NON_ENGLISH = '1_3'
-
-// Filter modes: 0 = no filter, 1 = no remakes, 2 = trusted only
-const FILTER_NO_REMAKES = '1'
-
-// All known resolution tokens Nyaa titles use
-const RESOLUTION_TOKENS = ['2160', '4k', '1080', '720', '540', '480']
+// Default values — can be overridden via Hayase extension options
+const DEFAULT_DOMAIN   = 'https://nyaa.si'
+const DEFAULT_CATEGORY = '1_2'  // Anime - English translated
+const DEFAULT_FILTER   = '0'    // No filter (0 = all, 1 = no remakes, 2 = trusted only)
 
 // Fetch timeout in ms
-const TIMEOUT_MS = 10000
+const TIMEOUT_MS = 15000
 
-// Max retries on network error
+// Max retries on network failure
 const MAX_RETRIES = 2
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 /**
- * Parse a Nyaa size string like "1.5 GiB" or "350.2 MiB" into bytes.
+ * Parse a Nyaa size string like "1.5 GiB" into bytes.
  * @param {string} sizeStr
  * @returns {number}
  */
@@ -63,7 +67,7 @@ function parseSize (sizeStr) {
 }
 
 /**
- * Extract a named nyaa: namespace tag value from an XML item string.
+ * Extract a <nyaa:tag> value from an RSS item string.
  * e.g. getNyaaTag(item, 'seeders') => '42'
  * @param {string} item
  * @param {string} tag
@@ -75,7 +79,7 @@ function getNyaaTag (item, tag) {
 }
 
 /**
- * Extract a plain RSS tag value (handles CDATA).
+ * Extract a plain RSS tag value, handles CDATA wrappers.
  * @param {string} item
  * @param {string} tag
  * @returns {string}
@@ -87,28 +91,36 @@ function getTag (item, tag) {
 
 /**
  * Fetch with timeout and retry logic.
+ * Uses query.fetch (passed by Hayase) instead of global fetch —
+ * required for CORS to work inside Hayase's sandboxed Web Worker.
+ * @param {typeof fetch} fetchFn  — Hayase's fetch function from query.fetch
  * @param {string} url
  * @param {number} [retries]
  * @returns {Promise<Response>}
  */
-async function fetchWithRetry (url, retries = MAX_RETRIES) {
+async function fetchWithRetry (fetchFn, url, retries = MAX_RETRIES) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
     log.info(`Fetch attempt ${attempt + 1}/${retries + 1}`, { url })
     try {
-      const res = await fetch(url, {
+      const res = await fetchFn(url, {
         signal: controller.signal,
-        headers: { 'User-Agent': 'Hayase/1.0 (hayase.watch)' }
+        headers: { Accept: 'application/rss+xml, application/xml, text/xml' }
       })
       clearTimeout(timer)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      if (!res.ok) throw new Error(`Nyaa returned HTTP ${res.status}. The site may be down or blocked in your region.`)
       log.info('Fetch OK', { status: res.status, url })
       return res
     } catch (err) {
       clearTimeout(timer)
       log.warn(`Fetch failed (attempt ${attempt + 1})`, { url, error: err.message })
-      if (attempt === retries) throw err
+      if (attempt === retries) {
+        // Throw user-friendly error on final failure
+        if (err.name === 'AbortError') throw new Error(`Nyaa request timed out after ${TIMEOUT_MS / 1000}s. The site may be slow or blocked.`)
+        throw new Error(`Could not reach Nyaa: ${err.message}`)
+      }
+      // Exponential backoff: 500ms, 1000ms
       const delay = 500 * (attempt + 1)
       log.debug(`Retrying in ${delay}ms...`)
       await new Promise(r => setTimeout(r, delay))
@@ -118,62 +130,62 @@ async function fetchWithRetry (url, retries = MAX_RETRIES) {
 
 /**
  * Detect if a torrent title likely contains a given episode number.
- * Handles common patterns: " - 01", "E01", "[01]", "_01_", etc.
+ * Handles common patterns: "- 01", "E01", "[01]", "[001]" etc.
  * @param {string} title
  * @param {number} episode
  * @returns {boolean}
  */
 function titleMatchesEpisode (title, episode) {
   const ep = episode.toString()
-  const epPadded = ep.padStart(2, '0')
+  const epPadded  = ep.padStart(2, '0')
   const epPadded3 = ep.padStart(3, '0')
-  // Common patterns: "- 01 ", "E01", "[01]", " 01 ", "_01_", "- 01v"
   const patterns = [
     `[-–\\s]\\s*${epPadded3}[\\s\\[\\]vV._(]`,
     `[-–\\s]\\s*${epPadded}[\\s\\[\\]vV._(]`,
     `[Ee]${epPadded}[^\\d]`,
     `\\[${epPadded}\\]`,
-    `\\[${epPadded3}\\]`
+    `\\[${epPadded3}\\]`,
   ]
   return patterns.some(p => new RegExp(p).test(title))
 }
 
 /**
- * Check whether a title matches a desired resolution, or if no resolution
- * preference is set, return true.
- * @param {string} title
- * @param {string} resolution  e.g. '1080', '720', or ''
- * @returns {boolean}
- */
-function titleMatchesResolution (title, resolution) {
-  if (!resolution) return true
-  const lower = title.toLowerCase()
-  // Must contain requested resolution
-  if (!lower.includes(resolution)) return false
-  return true
-}
-
-/**
- * Build a clean Nyaa search query from a title.
- * Preserves Japanese/Unicode characters (Nyaa indexes them).
- * Only strips characters that break URL encoding badly.
+ * Clean a title for use as a Nyaa search query.
+ * Preserves Japanese/Unicode characters — Nyaa indexes them.
+ * Only strips characters that break URL encoding.
  * @param {string} title
  * @returns {string}
  */
 function cleanTitle (title) {
   return title
-    .replace(/[<>]/g, ' ')  // remove angle brackets only
+    .replace(/[<>"]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 }
 
 /**
- * Parse raw RSS XML text into TorrentResult objects.
+ * Build a Nyaa RSS URL with the given query and options.
+ * @param {string} query
+ * @param {object} options  — Hayase extension options
+ * @returns {string}
+ */
+function buildURL (query, options = {}) {
+  const domain   = (options.domain?.trim()   || DEFAULT_DOMAIN).replace(/\/+$/, '')
+  const category = options.category?.trim()  || DEFAULT_CATEGORY
+  const filter   = options.filter?.trim()    || DEFAULT_FILTER
+  const params   = new URLSearchParams({ page: 'rss', q: query, c: category, f: filter, s: 'seeders', o: 'desc' })
+  return `${domain}/?${params.toString()}`
+}
+
+/**
+ * Parse raw RSS XML into TorrentResult objects.
  * @param {string} xml
  * @param {{ resolution: string, isBatch: boolean, episode?: number }} opts
- * @returns {import('./').TorrentResult[]}
+ * @returns {object[]}
  */
 function parseRSS (xml, { resolution, isBatch, episode }) {
+  if (!xml.includes('<rss')) throw new Error('Nyaa returned a non-RSS response. The site may have changed or be blocking requests.')
+
   const results = []
   const itemRegex = /<item>([\s\S]*?)<\/item>/g
   let match
@@ -195,17 +207,12 @@ function parseRSS (xml, { resolution, isBatch, episode }) {
       continue
     }
 
-    // Resolution filtering — skip if user wants specific res and title doesn't have it
-    if (resolution && !titleMatchesResolution(title, resolution)) {
+    // Resolution filtering — skip if user wants a specific res and title doesn't have it
+    if (resolution && !title.toLowerCase().includes(resolution)) {
       skippedResolution++
       log.debug(`Skipped (resolution mismatch, want ${resolution})`, { title })
       continue
     }
-
-    // For single episode queries, prefer titles that contain the episode number
-    // but don't hard-exclude — Hayase's resolver will handle final matching
-    const hasEpMatch = episode != null ? titleMatchesEpisode(title, episode) : true
-    const accuracy = hasEpMatch ? 'high' : 'medium'
 
     const infoHash = getNyaaTag(item, 'infoHash').toLowerCase()
     if (!infoHash) {
@@ -214,6 +221,11 @@ function parseRSS (xml, { resolution, isBatch, episode }) {
       continue
     }
 
+    // Episode match check — affects accuracy rating, doesn't hard-exclude results
+    const hasEpMatch = episode != null ? titleMatchesEpisode(title, episode) : true
+    const accuracy = hasEpMatch ? 'high' : 'medium'
+
+    // Build magnet link with standard Nyaa trackers
     const magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(title)}` +
       `&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce` +
       `&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce` +
@@ -221,85 +233,67 @@ function parseRSS (xml, { resolution, isBatch, episode }) {
       `&tr=udp%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce` +
       `&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce`
 
-    const seeders = parseInt(getNyaaTag(item, 'seeders') || '0', 10)
-    const leechers = parseInt(getNyaaTag(item, 'leechers') || '0', 10)
-    const downloads = parseInt(getNyaaTag(item, 'downloads') || '0', 10)
-    const size = parseSize(getNyaaTag(item, 'size'))
+    const seeders   = parseInt(getNyaaTag(item, 'seeders')  || '0', 10)
+    const leechers  = parseInt(getNyaaTag(item, 'leechers') || '0', 10)
+    const downloads = parseInt(getNyaaTag(item, 'downloads')|| '0', 10)
+    const size      = parseSize(getNyaaTag(item, 'size'))
 
-    // Parse pubDate (RFC 2822: "Thu, 08 May 2025 12:00:00 +0000")
+    // Parse RFC 2822 date from pubDate
     const pubDateStr = getTag(item, 'pubDate')
     const date = pubDateStr ? new Date(pubDateStr) : new Date(0)
 
-    // Determine result type
+    // Detect batch releases
     let type
-    if (isBatch) {
+    if (isBatch || /batch|season|complete|s\d{2}(?!\d)|vol\.?\s*\d/i.test(title)) {
       type = 'batch'
-    } else {
-      const lowerTitle = title.toLowerCase()
-      if (/batch|season|complete|s\d{2}(?!\d)|vol\.?\s*\d/i.test(lowerTitle)) {
-        type = 'batch'
-      }
     }
 
     log.debug('Parsed result', { title, accuracy, type, seeders, leechers, size })
+
     results.push({
       title,
-      link: magnet,
-      hash: infoHash,
-      seeders: seeders >= 30000 ? 0 : seeders,
+      link:     magnet,
+      hash:     infoHash,
+      seeders:  seeders  >= 30000 ? 0 : seeders,   // Nyaa uses 99999 as "unknown"
       leechers: leechers >= 30000 ? 0 : leechers,
       downloads,
       size,
       date,
       accuracy,
-      type
+      type,
     })
   }
 
-  log.info('parseRSS complete', {
-    total: results.length,
-    skippedCategory,
-    skippedResolution,
-    skippedNoHash
-  })
+  log.info('parseRSS complete', { total: results.length, skippedCategory, skippedResolution, skippedNoHash })
   return results
 }
 
 /**
- * Build a Nyaa RSS URL.
- * @param {string} query
- * @param {string} [category]
- * @param {string} [filter]
- * @returns {string}
- */
-function buildURL (query, category = CAT_ANIME_ENGLISH, filter = FILTER_NO_REMAKES) {
-  const params = new URLSearchParams({
-    page: 'rss',
-    c: category,
-    f: filter,
-    q: query
-  })
-  return `https://nyaa.si/?${params.toString()}`
-}
-
-/**
- * Try fetching and parsing RSS for a list of queries in order.
- * Returns on the first query that gives results, or empty array.
+ * Try a list of queries in order, return results from the first one that hits.
+ * Tries each query across multiple categories before moving to the next query.
+ * @param {typeof fetch} fetchFn
  * @param {string[]} queries
- * @param {{ resolution: string, isBatch: boolean, episode?: number }} parseOpts
- * @param {string[]} [categories]
- * @returns {Promise<import('./').TorrentResult[]>}
+ * @param {object} parseOpts
+ * @param {object} options  — Hayase extension options
+ * @returns {Promise<object[]>}
  */
-async function fetchFirstResults (queries, parseOpts, categories = [CAT_ANIME_ENGLISH]) {
-  log.info('fetchFirstResults start', { queries, parseOpts, categories })
+async function fetchFirstResults (fetchFn, queries, parseOpts, options) {
+  log.info('fetchFirstResults start', { queries, parseOpts })
+
+  // Try English-translated first, then non-English as fallback
+  const categories = [
+    options.category || DEFAULT_CATEGORY,
+    '1_3', // Non-English (fallback)
+  ]
+
   for (const query of queries) {
     for (const cat of categories) {
       try {
-        const url = buildURL(cleanTitle(query), cat)
+        const optWithCat = { ...options, category: cat }
+        const url = buildURL(cleanTitle(query), optWithCat)
         log.info('Trying query', { query, category: cat, url })
-        const res = await fetchWithRetry(url)
+        const res = await fetchWithRetry(fetchFn, url)
         const xml = await res.text()
-        log.debug('RSS XML length', { chars: xml.length })
         const results = parseRSS(xml, parseOpts)
         if (results.length > 0) {
           log.info('Query succeeded', { query, category: cat, resultCount: results.length })
@@ -307,112 +301,146 @@ async function fetchFirstResults (queries, parseOpts, categories = [CAT_ANIME_EN
         }
         log.info('Query returned 0 results, trying next', { query, category: cat })
       } catch (err) {
-        log.error('Query threw error', { query, category: cat, error: err.message })
+        log.error('Query threw error', { query, error: err.message })
+        throw err // Re-throw so Hayase can show the user-friendly message
       }
     }
   }
+
   log.warn('All queries exhausted, returning empty')
   return []
 }
 
-export default new class NyaaSi extends AbstractSource {
-  /** @type {import('./').SearchFunction} */
-  async single ({ titles, episode, resolution, exclusions }) {
-    log.info('single() called', { titles, episode, resolution, exclusions })
-    if (!titles?.length) return []
+/**
+ * Filter out results whose titles contain any exclusion keyword.
+ * @param {object[]} results
+ * @param {string[]} exclusions
+ * @returns {object[]}
+ */
+function applyExclusions (results, exclusions) {
+  if (!exclusions?.length) return results
+  const lower = exclusions.map(e => e.toLowerCase())
+  const filtered = results.filter(r => !lower.some(ex => r.title.toLowerCase().includes(ex)))
+  log.debug('applyExclusions', { before: results.length, after: filtered.length, exclusions })
+  return filtered
+}
 
-    const ep = episode != null ? episode.toString() : null
-    const epPadded = ep ? ep.padStart(2, '0') : null
+// ─── Extension Export ─────────────────────────────────────────────────────────
+// Exported as a plain object — no class, no inheritance.
+// Hayase loads this directly from the bundled dist/nyaasi.js file.
 
-    // Build query variants, most specific first
-    const queries = []
-    for (const title of titles.slice(0, 3)) {
-      if (epPadded) {
-        queries.push(`${title} - ${epPadded}`)
-        queries.push(`${title} ${epPadded}`)
-      }
-      queries.push(title)
-    }
-    log.debug('Query list', queries)
-
-    const results = await fetchFirstResults(
-      queries,
-      { resolution: resolution || '', isBatch: false, episode },
-      [CAT_ANIME_ENGLISH, CAT_ANIME_NON_ENGLISH]
-    )
-
-    const filtered = this.applyExclusions(results, exclusions)
-    log.info('single() done', { rawCount: results.length, filteredCount: filtered.length })
-    return filtered
-  }
-
-  /** @type {import('./').SearchFunction} */
-  async batch ({ titles, episodeCount, resolution, exclusions }) {
-    log.info('batch() called', { titles, episodeCount, resolution, exclusions })
-    if (!titles?.length) return []
-
-    const queries = titles.slice(0, 3).map(t => t)
-
-    const results = await fetchFirstResults(
-      queries,
-      { resolution: resolution || '', isBatch: true },
-      [CAT_ANIME_ENGLISH, CAT_ANIME_NON_ENGLISH]
-    )
-
-    const filtered = results.filter(r =>
-      r.type === 'batch' ||
-      (episodeCount && r.title.match(/\d+\s*[-~]\s*\d+/))
-    )
-    log.info('batch() pack filter', { before: results.length, after: filtered.length })
-
-    const final = this.applyExclusions(filtered.length ? filtered : results, exclusions)
-    log.info('batch() done', { finalCount: final.length })
-    return final
-  }
-
-  /** @type {import('./').SearchFunction} */
-  async movie ({ titles, resolution, exclusions }) {
-    log.info('movie() called', { titles, resolution, exclusions })
-    if (!titles?.length) return []
-
-    const queries = titles.slice(0, 3)
-
-    const results = await fetchFirstResults(
-      queries,
-      { resolution: resolution || '', isBatch: false },
-      [CAT_ANIME_ENGLISH, CAT_ANIME_NON_ENGLISH]
-    )
-
-    const filtered = this.applyExclusions(results, exclusions)
-    log.info('movie() done', { rawCount: results.length, filteredCount: filtered.length })
-    return filtered
-  }
+export default {
 
   /**
-   * Filter out results containing any exclusion keyword.
-   * @param {import('./').TorrentResult[]} results
-   * @param {string[]} exclusions
-   * @returns {import('./').TorrentResult[]}
+   * Health check — Hayase calls this to verify the extension is working.
+   * Must return true if OK, or throw a descriptive error if not.
    */
-  applyExclusions (results, exclusions) {
-    if (!exclusions?.length) return results
-    const lower = exclusions.map(e => e.toLowerCase())
-    const filtered = results.filter(r =>
-      !lower.some(ex => r.title.toLowerCase().includes(ex))
-    )
-    log.debug('applyExclusions', { before: results.length, after: filtered.length, exclusions })
-    return filtered
-  }
-
-  async test () {
+  async test (query) {
     log.info('test() called')
+    const fetchFn = query?.fetch ?? fetch
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
     try {
-      const res = await fetchWithRetry(buildURL('Frieren'))
-      log.info('test() result', { ok: res.ok })
-      return res.ok
+      const res = await fetchFn(`${DEFAULT_DOMAIN}/?page=rss`, { signal: controller.signal })
+      if (!res.ok) throw new Error(`Nyaa returned HTTP ${res.status}. The site may be down or blocked in your region.`)
+      log.info('test() passed')
+      return true
     } catch (err) {
-      log.error('test() failed', { error: err.message })
-      return false
+      if (err.name === 'AbortError') throw new Error(`Nyaa did not respond within ${TIMEOUT_MS / 1000}s. Check your network or whether nyaa.si is blocked.`)
+      throw new Error(`Could not reach Nyaa: ${err.message}`)
+    } finally {
+      clearTimeout(timer)
     }
-  }
-}()
+  },
+
+  /**
+   * Single episode search.
+   * Builds multiple query variants and tries them in order.
+   */
+  async single (query, options = {}) {
+    log.info('single() called', { titles: query.titles, episode: query.episode, resolution: query.resolution })
+    if (!query.titles?.length) return []
+
+    const ep       = query.episode != null ? query.episode.toString() : null
+    const epPadded = ep ? ep.padStart(2, '0') : null
+
+    // Build query variants from most specific to least specific
+    const queries = []
+    for (const title of query.titles.slice(0, 3)) {
+      if (epPadded) {
+        queries.push(`${title} - ${epPadded}`)  // e.g. "Frieren - 01"
+        queries.push(`${title} ${epPadded}`)    // e.g. "Frieren 01"
+      }
+      queries.push(title)                       // fallback: title only
+    }
+    log.debug('Query variants', queries)
+
+    const results = await fetchFirstResults(
+      query.fetch,
+      queries,
+      { resolution: query.resolution || '', isBatch: false, episode: query.episode },
+      options
+    )
+
+    const filtered = applyExclusions(results, query.exclusions)
+    log.info('single() done', { rawCount: results.length, filteredCount: filtered.length })
+    return filtered
+  },
+
+  /**
+   * Batch search — looks for complete season packs.
+   * Appends batch/complete/season keywords to help find packs.
+   */
+  async batch (query, options = {}) {
+    log.info('batch() called', { titles: query.titles, episodeCount: query.episodeCount })
+    if (!query.titles?.length) return []
+
+    // Try batch-specific queries first, then fall back to plain title
+    const baseTitle = query.titles[0]
+    const queries = [
+      `${baseTitle} batch`,
+      `${baseTitle} complete`,
+      `${baseTitle} season`,
+      ...query.titles.slice(0, 3),
+    ]
+
+    const results = await fetchFirstResults(
+      query.fetch,
+      queries,
+      { resolution: query.resolution || '', isBatch: true },
+      options
+    )
+
+    // Prefer results that look like packs (episode range in title or type=batch)
+    const packs = results.filter(r =>
+      r.type === 'batch' ||
+      (query.episodeCount && r.title.match(/\d+\s*[-~]\s*\d+/))
+    )
+    log.info('batch() pack filter', { before: results.length, after: packs.length })
+
+    const final = applyExclusions(packs.length ? packs : results, query.exclusions)
+    log.info('batch() done', { finalCount: final.length })
+    return final
+  },
+
+  /**
+   * Movie search — same as single but without episode number logic.
+   */
+  async movie (query, options = {}) {
+    log.info('movie() called', { titles: query.titles, resolution: query.resolution })
+    if (!query.titles?.length) return []
+
+    const queries = query.titles.slice(0, 3)
+
+    const results = await fetchFirstResults(
+      query.fetch,
+      queries,
+      { resolution: query.resolution || '', isBatch: false },
+      options
+    )
+
+    const filtered = applyExclusions(results, query.exclusions)
+    log.info('movie() done', { rawCount: results.length, filteredCount: filtered.length })
+    return filtered
+  },
+}
