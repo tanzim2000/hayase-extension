@@ -2,7 +2,7 @@
 	{
 		"name": "Nyaa",
 		"id": "nyaasi",
-		"version": "1.0.0",
+		"version": "2.0",
 		"type": "torrent",
 		"accuracy": "high",
 		"ratio": 0,
