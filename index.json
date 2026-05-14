@@ -90,5 +90,64 @@
     "icon": "https://animetosho.org/inc/favicon.ico",
     "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
     "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/animetosho.js"
+  },
+  {
+    "manifestVersion": 2,
+    "name": "SubsPlease",
+    "id": "tanzim.subsplease",
+    "version": "2.0.0",
+    "description": "SubsPlease (subsplease.org) — trusted fansub group that simulcasts anime weekly. Consistent, high quality releases.",
+    "type": "torrent",
+    "accuracy": "high",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "sub",
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9zdWJzcGxlYXNlLm9yZw==",
+    "icon": "https://subsplease.org/wp-content/uploads/2020/05/cropped-cropped-icon-32x32.png",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/subsplease.js",
+    "options": {
+      "resolution": {
+        "type": "string",
+        "description": "Preferred resolution. 1080, 720, or 480. Leave empty to use Hayase's resolution setting.",
+        "default": "1080"
+      }
+    }
+  },
+  {
+    "manifestVersion": 2,
+    "name": "Sukebei",
+    "id": "tanzim.sukebei",
+    "version": "1.0.0",
+    "description": "Sukebei (sukebei.nyaa.si) — Nyaa's adult content sister site. Same RSS format, hentai anime and doujinshi.",
+    "type": "torrent",
+    "accuracy": "high",
+    "updatePeers": true,
+    "nsfw": true,
+    "ratio": 0,
+    "media": "sub",
+    "languages": ["US", "JP"],
+    "url": "aHR0cHM6Ly9zdWtlYmVpLm55YWEuc2k=",
+    "icon": "https://sukebei.nyaa.si/static/favicon.png",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/sukebei.js",
+    "options": {
+      "domain": {
+        "type": "string",
+        "description": "Sukebei base URL. Change to a mirror if sukebei.nyaa.si is blocked.",
+        "default": "https://sukebei.nyaa.si"
+      },
+      "category": {
+        "type": "string",
+        "description": "Category. 1_1 = Anime, 1_2 = Doujinshi, 1_4 = Manga, 2_2 = Real Life Videos, 0_0 = All.",
+        "default": "1_1"
+      },
+      "filter": {
+        "type": "string",
+        "description": "Quality filter. 0 = no filter, 1 = no remakes, 2 = trusted only.",
+        "default": "0"
+      }
+    }
   }
 ]
