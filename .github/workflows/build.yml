@@ -36,10 +36,10 @@ jobs:
 
     steps:
       # Step 1 — Check out your repo so the bot can read your files
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Step 2 — Install Node.js 22
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '24'
 
