@@ -54,7 +54,7 @@ jobs:
       # If nothing changed (e.g. you only edited README), skip the commit
       - name: Commit built bundles if changed
         run: |
-          if git diff --quiet -- dist/; then
+          if git diff --quiet -- dist/ && ! git ls-files --others --exclude-standard dist/ | grep -q .; then
             echo "dist/ unchanged, nothing to commit"
             exit 0
           fi
