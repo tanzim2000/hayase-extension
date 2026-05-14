@@ -42,7 +42,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
       # Step 3 — Install esbuild (reads package.json devDependencies)
       # npm ci is like npm install but faster and stricter — good for CI
