@@ -22,6 +22,7 @@ const config = {
     seadex:     'src/seadex.js',
     subsplease: 'src/subsplease.js',
     tokyotosho: 'src/tokyotosho.js',
+    sukebei:    'src/sukebei.js',
   },
 
   // bundle: true — follow all imports and inline them into one file
