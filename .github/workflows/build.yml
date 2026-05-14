@@ -1,0 +1,67 @@
+# build.yml — GitHub Actions workflow for hayase-extension
+#
+# Triggers automatically when you push changes to src/, build.mjs,
+# package.json, or this workflow file itself.
+#
+# What it does:
+#   1. Spins up a Linux machine in the cloud
+#   2. Installs Node.js and esbuild
+#   3. Runs the build script (node build.mjs)
+#   4. If dist/ changed, commits and pushes the new bundles back to your repo
+#
+# You never need to touch dist/ manually — this bot handles it.
+
+name: build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Only trigger when these files change — no point rebuilding for README edits
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'build.mjs'
+      - '.github/workflows/build.yml'
+  
+  # Allows you to manually trigger the workflow from GitHub's Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Give the bot permission to commit back to your repo
+    permissions:
+      contents: write
+
+    steps:
+      # Step 1 — Check out your repo so the bot can read your files
+      - uses: actions/checkout@v4
+
+      # Step 2 — Install Node.js 22
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # Step 3 — Install esbuild (reads package.json devDependencies)
+      # npm ci is like npm install but faster and stricter — good for CI
+      - run: npm ci
+
+      # Step 4 — Run the build script → generates dist/*.js
+      - run: npm run build
+
+      # Step 5 — If dist/ changed, commit and push the new bundles
+      # If nothing changed (e.g. you only edited README), skip the commit
+      - name: Commit built bundles if changed
+        run: |
+          if git diff --quiet -- dist/; then
+            echo "dist/ unchanged, nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/
+          git commit -m "build: refresh bundles"
+          git push
