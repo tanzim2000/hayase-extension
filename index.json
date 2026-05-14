@@ -104,7 +104,7 @@
     "media": "sub",
     "languages": ["US"],
     "url": "aHR0cHM6Ly9zdWJzcGxlYXNlLm9yZw==",
-    "icon": "https://subsplease.org/favicon.ico"
+    "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/subsplease.png"
     "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
     "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/subsplease.js",
     "options": {
