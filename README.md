@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
 [![Extensions](https://img.shields.io/badge/extensions-9-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
 
-A collection of torrent source extensions for [Hayase](https://hayase.watch/) — covering English subs, English dubs, non-English languages, and CJK fansubs.
+A collection of torrent source extensions for [Hayase](https://github.com/hayase-app/hayase) — covering English subs, English dubs, non-English languages, and CJK fansubs.
 
 ---
 
@@ -233,6 +233,27 @@ Push your branch and open a pull request against `main`. Describe what the exten
 - Apply `query.exclusions` to filter out unwanted results
 - Set `accuracy` honestly — `high` only if the source uses ID-based matching, `medium` for keyword search, `low` if results are noisy
 - Add dev comments explaining non-obvious decisions, especially any trade-offs
+
+---
+
+## Known Issues
+
+- **Tokyo Toshokan** is currently not working. See the [Issues](https://github.com/tanzim2000/hayase-extension/issues) section for details and progress.
+
+---
+
+## Why No NZB Support?
+
+NZB sources like AltHub and NZBGeek require a personal API key to search, which means every user has to register, generate a key, and paste it into the extension settings before it works. That's friction I didn't want to impose.
+
+That said, if you want to add NZB support yourself, contributions are absolutely welcome — see the [Contributing](#contributing) section above.
+
+---
+
+## Acknowledgements
+
+- **[sinnafuls/hayase-ext](https://github.com/sinnafuls/hayase-ext)** — the project that inspired this one. Several ideas (including acg.rip support and the NZB extension approach) came from looking at his work.
+- **[Claude](https://claude.ai)** (Anthropic) — assisted with architecture decisions, code, and documentation throughout this project.
 
 ---
 
