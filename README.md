@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
 [![Extensions](https://img.shields.io/badge/extensions-9-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
 
-A collection of torrent source extensions for [Hayase](https://github.com/hayase-app/hayase) — covering English subs, English dubs, non-English languages, and CJK fansubs.
+A collection of torrent source extensions for [Hayase](https://hayase.watch/) — covering English subs, English dubs, non-English languages, and CJK fansubs.
 
 > **Disclaimer:** This project is for **educational purposes only**. It provides source code for search extensions that interface with publicly available torrent indexers. It does not host, distribute, or link to any copyrighted content. Users are solely responsible for ensuring their use complies with applicable laws and the terms of service of any indexer they connect to.
 
