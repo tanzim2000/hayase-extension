@@ -3,7 +3,7 @@
     "manifestVersion": 2,
     "name": "Nyaa",
     "id": "tanzim.nyaasi",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "description": "Anime torrents with infoHash extraction.",
     "type": "torrent",
     "accuracy": "high",
@@ -21,15 +21,88 @@
         "description": "Nyaa base URL. Change to a mirror (e.g. https://nyaa.land) if nyaa.si is blocked.",
         "default": "https://nyaa.si"
       },
-      "category": {
+      "filter": {
         "type": "string",
-        "description": "Nyaa category. 1_2 = Anime English, 1_3 = Non-English, 1_4 = Raw, 0_0 = All.",
-        "default": "1_2"
+        "description": "Quality filter. 0 = no filter, 1 = no remakes, 2 = trusted only.",
+        "default": "0"
+      }
+    }
+  },
+  {
+    "manifestVersion": 2,
+    "name": "Nyaa (Dub)",
+    "id": "tanzim.nyaasi.dub",
+    "version": "1.0.0",
+    "description": "English-dubbed anime from Nyaa.si. Appends 'Dubbed' to every search query.",
+    "type": "torrent",
+    "accuracy": "high",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "dub",
+    "languages": ["US"],
+    "url": "aHR0cHM6Ly9ueWFhLnNp",
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/nyaasi.js",
+    "options": {
+      "domain": {
+        "type": "string",
+        "description": "Nyaa base URL. Change to a mirror (e.g. https://nyaa.land) if nyaa.si is blocked.",
+        "default": "https://nyaa.si"
       },
       "filter": {
         "type": "string",
         "description": "Quality filter. 0 = no filter, 1 = no remakes, 2 = trusted only.",
         "default": "0"
+      },
+      "keyword": {
+        "type": "string",
+        "description": "Keyword appended to every search query. Default is 'Dubbed'.",
+        "default": "Dubbed"
+      },
+      "category": {
+        "type": "string",
+        "description": "Nyaa category. Default is 1_2 (Anime - English Translated).",
+        "default": "1_2"
+      }
+    }
+  },
+  {
+    "manifestVersion": 2,
+    "name": "Nyaa (Non-English)",
+    "id": "tanzim.nyaasi.nonenglish",
+    "version": "1.0.0",
+    "description": "Non-English dubbed/subbed anime from Nyaa.si. Set the keyword to your language, e.g. Arabic, Hindi, Bangla.",
+    "type": "torrent",
+    "accuracy": "medium",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "dub",
+    "languages": ["SA", "EG", "AE", "IN", "BD", "MA", "DZ", "PK"],
+    "url": "aHR0cHM6Ly9ueWFhLnNp",
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/nyaasi.js",
+    "options": {
+      "domain": {
+        "type": "string",
+        "description": "Nyaa base URL. Change to a mirror (e.g. https://nyaa.land) if nyaa.si is blocked.",
+        "default": "https://nyaa.si"
+      },
+      "filter": {
+        "type": "string",
+        "description": "Quality filter. 0 = no filter, 1 = no remakes, 2 = trusted only.",
+        "default": "0"
+      },
+      "keyword": {
+        "type": "string",
+        "description": "Your language keyword, appended to every search query. e.g. Arabic, Hindi, Bangla.",
+        "default": ""
+      },
+      "category": {
+        "type": "string",
+        "description": "Nyaa category. Default is 1_3 (Anime - Non-English Translated).",
+        "default": "1_3"
       }
     }
   },
