@@ -190,6 +190,30 @@
   },
   {
     "manifestVersion": 2,
+    "name": "acg.rip",
+    "id": "tanzim.acgrip",
+    "version": "1.0.0",
+    "description": "Chinese anime tracker, great for CJK fansubs not found on Nyaa.",
+    "type": "torrent",
+    "accuracy": "medium",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "both",
+    "languages": ["CN", "JP", "TW"],
+    "url": "aHR0cHM6Ly9hY2cucmlw",
+    "icon": "https://acg.rip/favicon.ico",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/acgrip.js",
+    "options": {
+      "domain": {
+        "type": "string",
+        "description": "acg.rip base URL. Override only if the site moves domains.",
+        "default": "https://acg.rip"
+      }
+    }
+  },
+  {
+    "manifestVersion": 2,
     "name": "Sukebei",
     "id": "tanzim.sukebei",
     "version": "1.0.0",
