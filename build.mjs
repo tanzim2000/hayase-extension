@@ -23,6 +23,7 @@ const config = {
     subsplease: 'src/subsplease.js',
     tokyotosho: 'src/tokyotosho.js',
     sukebei:    'src/sukebei.js',
+    acgrip:     'src/acgrip.js',
   },
 
   // bundle: true — follow all imports and inline them into one file
