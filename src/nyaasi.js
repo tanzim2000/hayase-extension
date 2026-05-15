@@ -11,7 +11,9 @@
 //   - Retry logic with exponential backoff
 //   - Exclusion keyword filtering
 //   - Batch detection
-//   - Configurable domain, category, filter via Hayase options
+//   - Configurable domain, category, filter, keyword via Hayase options
+//   - keyword option: appended to every query — use "Dubbed" for dub entries,
+//     "Arabic" / "Hindi" / "Bangla" etc. for non-English entries, "" for subs
 //   - Debug logging (set DEBUG_MODE = true to enable)
 
 // ─── Debug ────────────────────────────────────────────────────────────────────
@@ -38,6 +40,7 @@ const log = {
 const DEFAULT_DOMAIN   = 'https://nyaa.si'
 const DEFAULT_CATEGORY = '1_2'  // Anime - English translated
 const DEFAULT_FILTER   = '0'    // No filter (0 = all, 1 = no remakes, 2 = trusted only)
+const DEFAULT_KEYWORD  = ''     // No keyword suffix by default (set to "Dubbed", "Arabic", etc. via options)
 
 // Fetch timeout in ms
 const TIMEOUT_MS = 15000
@@ -164,6 +167,19 @@ function cleanTitle (title) {
 }
 
 /**
+ * Append the keyword suffix to a query string if one is configured.
+ * e.g. "Frieren - 01" + "Dubbed" => "Frieren - 01 Dubbed"
+ *      "Frieren - 01" + ""       => "Frieren - 01"
+ * @param {string} query
+ * @param {string} keyword
+ * @returns {string}
+ */
+function applyKeyword (query, keyword) {
+  const kw = keyword?.trim()
+  return kw ? `${query} ${kw}` : query
+}
+
+/**
  * Build a Nyaa RSS URL with the given query and options.
  * @param {string} query
  * @param {object} options  — Hayase extension options
@@ -280,11 +296,14 @@ function parseRSS (xml, { resolution, isBatch, episode }) {
 async function fetchFirstResults (fetchFn, queries, parseOpts, options) {
   log.info('fetchFirstResults start', { queries, parseOpts })
 
-  // Try English-translated first, then non-English as fallback
-  const categories = [
-    options.category || DEFAULT_CATEGORY,
-    '1_3', // Non-English (fallback)
-  ]
+  // Try the configured category first, then non-English as fallback.
+  // For keyword-based entries (dub, non-English), the fallback is skipped
+  // since mixing categories would pollute results with unrelated content.
+  const keyword = options.keyword?.trim() || DEFAULT_KEYWORD
+  const primaryCategory = options.category || DEFAULT_CATEGORY
+  const categories = keyword
+    ? [primaryCategory]                  // keyword entries: stick to one category
+    : [primaryCategory, '1_3']           // sub entry: fall back to non-English
 
   for (const query of queries) {
     for (const cat of categories) {
@@ -328,6 +347,12 @@ function applyExclusions (results, exclusions) {
 // ─── Extension Export ─────────────────────────────────────────────────────────
 // Exported as a plain object — no class, no inheritance.
 // Hayase loads this directly from the bundled dist/nyaasi.js file.
+//
+// The same file powers three index.json entries:
+//   - Nyaa            → keyword: "",        category: "1_2", media: sub
+//   - Nyaa (Dub)      → keyword: "Dubbed",  category: "1_2", media: dub
+//   - Nyaa (Non-English) → keyword: "",     category: "1_3", media: dub
+//     (user sets their own keyword: "Arabic", "Hindi", "Bangla", etc.)
 
 export default {
 
@@ -356,22 +381,25 @@ export default {
   /**
    * Single episode search.
    * Builds multiple query variants and tries them in order.
+   * If a keyword is configured, it's appended to every variant.
    */
   async single (query, options = {}) {
     log.info('single() called', { titles: query.titles, episode: query.episode, resolution: query.resolution })
     if (!query.titles?.length) return []
 
+    const keyword  = options.keyword?.trim() || DEFAULT_KEYWORD
     const ep       = query.episode != null ? query.episode.toString() : null
     const epPadded = ep ? ep.padStart(2, '0') : null
 
-    // Build query variants from most specific to least specific
+    // Build query variants from most specific to least specific,
+    // then apply the keyword suffix to each one
     const queries = []
     for (const title of query.titles.slice(0, 3)) {
       if (epPadded) {
-        queries.push(`${title} - ${epPadded}`)  // e.g. "Frieren - 01"
-        queries.push(`${title} ${epPadded}`)    // e.g. "Frieren 01"
+        queries.push(applyKeyword(`${title} - ${epPadded}`, keyword))  // e.g. "Frieren - 01 Dubbed"
+        queries.push(applyKeyword(`${title} ${epPadded}`, keyword))    // e.g. "Frieren 01 Dubbed"
       }
-      queries.push(title)                       // fallback: title only
+      queries.push(applyKeyword(title, keyword))                       // fallback: title only
     }
     log.debug('Query variants', queries)
 
@@ -389,19 +417,23 @@ export default {
 
   /**
    * Batch search — looks for complete season packs.
-   * Appends batch/complete/season keywords to help find packs.
+   * Appends batch/complete/season keywords to help find packs,
+   * then the keyword suffix (e.g. "Dubbed") on top of that.
    */
   async batch (query, options = {}) {
     log.info('batch() called', { titles: query.titles, episodeCount: query.episodeCount })
     if (!query.titles?.length) return []
 
-    // Try batch-specific queries first, then fall back to plain title
+    const keyword   = options.keyword?.trim() || DEFAULT_KEYWORD
     const baseTitle = query.titles[0]
+
+    // Try batch-specific queries first, then fall back to plain title.
+    // Keyword is appended after batch qualifiers so Nyaa can still match both.
     const queries = [
-      `${baseTitle} batch`,
-      `${baseTitle} complete`,
-      `${baseTitle} season`,
-      ...query.titles.slice(0, 3),
+      applyKeyword(`${baseTitle} batch`, keyword),
+      applyKeyword(`${baseTitle} complete`, keyword),
+      applyKeyword(`${baseTitle} season`, keyword),
+      ...query.titles.slice(0, 3).map(t => applyKeyword(t, keyword)),
     ]
 
     const results = await fetchFirstResults(
@@ -430,7 +462,8 @@ export default {
     log.info('movie() called', { titles: query.titles, resolution: query.resolution })
     if (!query.titles?.length) return []
 
-    const queries = query.titles.slice(0, 3)
+    const keyword = options.keyword?.trim() || DEFAULT_KEYWORD
+    const queries = query.titles.slice(0, 3).map(t => applyKeyword(t, keyword))
 
     const results = await fetchFirstResults(
       query.fetch,
