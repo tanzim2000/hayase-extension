@@ -226,12 +226,51 @@ Load the built extension locally in Hayase to verify it works before submitting.
 
 Push your branch and open a pull request against `main`. Describe what the extension does and what source it connects to.
 
+### Conventions
+
+#### Extension ID Format
+
+Every extension ID must follow this pattern:
+
+```
+{mediaType}.{sourceName}
+{mediaType}.{sourceName}.{variant}
+```
+
+| Segment | Description |
+|---|---|
+| `mediaType` | The type of content the extension serves. Use `anime` for anime. `movie` and `tv` are reserved for future use. |
+| `sourceName` | A short, lowercase identifier for the source site. e.g. `nyaasi`, `seadex`, `acgrip`. |
+| `variant` | Optional. Used when multiple entries share the same source. e.g. `dub`, `nonenglish`. |
+
+**Examples:**
+```
+anime.nyaasi
+anime.nyaasi.dub
+anime.nyaasi.nonenglish
+movie.nyaasi        ← reserved for future use
+tv.nyaasi           ← reserved for future use
+```
+
+IDs must be unique. Once published, **do not change an extension's ID** — Hayase uses it internally to store user settings and track installed extensions. Changing it is a breaking change for existing users.
+
+#### Accuracy
+
+Set the `accuracy` field honestly. Hayase uses it to rank and filter results for the user, so misrepresenting it directly affects the experience.
+
+| Value | When to use |
+|---|---|
+| `"high"` | The source uses ID-based matching (e.g. AniList ID, AniDB ID). Results are precise. |
+| `"medium"` | Some ID mapping is used but not perfect, or it's a single trusted source with very consistent naming. |
+| `"low"` | Pure string/keyword search. Results can be noisy or include false positives. |
+
+**Do not set `"high"` unless the source genuinely uses ID-based matching.** If in doubt, use `"low"`.
+
 ### Guidelines
 
 - Use `query.fetch` instead of global `fetch` — this is required for CORS to work inside Hayase's sandboxed environment
 - Always handle errors with user-friendly messages (these are shown directly to the user in Hayase)
 - Apply `query.exclusions` to filter out unwanted results
-- Set `accuracy` honestly — `high` only if the source uses ID-based matching, `medium` for keyword search, `low` if results are noisy
 - Add dev comments explaining non-obvious decisions, especially any trade-offs
 
 ---
