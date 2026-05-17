@@ -1,15 +1,17 @@
 # build.yml — GitHub Actions workflow for hayase-extension
 #
-# Triggers automatically when you push changes to src/, build.mjs,
+# Triggers automatically when you push changes to src/, tests/, build.mjs,
 # package.json, or this workflow file itself.
 #
 # What it does:
 #   1. Spins up a Linux machine in the cloud
-#   2. Installs Node.js and esbuild
-#   3. Runs the build script (node build.mjs)
-#   4. If dist/ changed, commits and pushes the new bundles back to your repo
+#   2. Installs Node.js and dependencies (including Vitest)
+#   3. Runs all tests — if any fail, the workflow stops here
+#   4. Runs the build script (node build.mjs)
+#   5. If dist/ changed, commits and pushes the new bundles back to your repo
 #
 # You never need to touch dist/ manually — this bot handles it.
+# Tests must pass before any build or commit happens.
 
 name: build
 
@@ -19,6 +21,7 @@ on:
     paths:
       # Only trigger when these files change — no point rebuilding for README edits
       - 'src/**'
+      - 'tests/**'
       - 'package.json'
       - 'build.mjs'
       - '.github/workflows/build.yml'
@@ -38,19 +41,24 @@ jobs:
       # Step 1 — Check out your repo so the bot can read your files
       - uses: actions/checkout@v5
 
-      # Step 2 — Install Node.js 22
+      # Step 2 — Install Node.js 24
       - uses: actions/setup-node@v5
         with:
           node-version: '24'
 
-      # Step 3 — Install esbuild (reads package.json devDependencies)
+      # Step 3 — Install all dependencies including Vitest
       # npm ci is like npm install but faster and stricter — good for CI
       - run: npm install
 
-      # Step 4 — Run the build script → generates dist/*.js
+      # Step 4 — Run all tests
+      # If any test fails, the workflow stops here — nothing gets built or committed
+      - name: Run tests
+        run: npm run test
+
+      # Step 5 — Run the build script → generates dist/*.js
       - run: npm run build
 
-      # Step 5 — If dist/ changed, commit and push the new bundles
+      # Step 6 — If dist/ changed, commit and push the new bundles
       # If nothing changed (e.g. you only edited README), skip the commit
       - name: Commit built bundles if changed
         run: |
