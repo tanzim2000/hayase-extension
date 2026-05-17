@@ -1,0 +1,103 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:nyaa="https://sukebei.nyaa.si/xmlns/nyaa" version="2.0">
+<channel>
+<title>Sukebei - "test" - Torrent File RSS</title>
+<description>RSS Feed for "test"</description>
+<link>https://sukebei.nyaa.si/</link>
+<atom:link href="https://sukebei.nyaa.si/?page=rss" rel="self" type="application/rss+xml"/>
+
+<!-- Standard item: real size, real seeders, .torrent link -->
+<item>
+<title>[260218][Neural Desires] Lab-Tested, Lust-Approved</title>
+<link>https://sukebei.nyaa.si/download/4577039.torrent</link>
+<guid isPermaLink="true">https://sukebei.nyaa.si/view/4577039</guid>
+<pubDate>Thu, 23 Apr 2026 07:17:06 -0000</pubDate>
+<nyaa:seeders>16</nyaa:seeders>
+<nyaa:leechers>2</nyaa:leechers>
+<nyaa:downloads>1859</nyaa:downloads>
+<nyaa:infoHash>c8c3efb946844bf46743f08a89db88deec8f2d3c</nyaa:infoHash>
+<nyaa:categoryId>1_1</nyaa:categoryId>
+<nyaa:category>Art - Anime</nyaa:category>
+<nyaa:size>1.3 GiB</nyaa:size>
+<nyaa:comments>0</nyaa:comments>
+<nyaa:trusted>No</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+<!-- Item with magnet link instead of .torrent -->
+<item>
+<title>[251229][sixpluswan] Morning Ritual + Mizuki + Chisa + Cuck Test</title>
+<link>https://sukebei.nyaa.si/download/4517317.torrent</link>
+<guid isPermaLink="true">https://sukebei.nyaa.si/view/4517317</guid>
+<pubDate>Thu, 12 Feb 2026 14:29:34 -0000</pubDate>
+<nyaa:seeders>2</nyaa:seeders>
+<nyaa:leechers>1</nyaa:leechers>
+<nyaa:downloads>1985</nyaa:downloads>
+<nyaa:infoHash>1a35b209196a7a7b5aeaebda5012dc09c5fe25ee</nyaa:infoHash>
+<nyaa:categoryId>1_1</nyaa:categoryId>
+<nyaa:category>Art - Anime</nyaa:category>
+<nyaa:size>1.1 GiB</nyaa:size>
+<nyaa:comments>0</nyaa:comments>
+<nyaa:trusted>No</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+<!-- Item with seeders >= 30000 — should be clamped to 0 -->
+<item>
+<title>[BDMV] Hentai Test Batch Complete Series</title>
+<link>https://sukebei.nyaa.si/download/9999999.torrent</link>
+<guid isPermaLink="true">https://sukebei.nyaa.si/view/9999999</guid>
+<pubDate>Sat, 28 Sep 2024 15:03:06 -0000</pubDate>
+<nyaa:seeders>99999</nyaa:seeders>
+<nyaa:leechers>99999</nyaa:leechers>
+<nyaa:downloads>1487</nyaa:downloads>
+<nyaa:infoHash>fdb214e790eb5bb0855d251d8538a5c76a92dd94</nyaa:infoHash>
+<nyaa:categoryId>1_1</nyaa:categoryId>
+<nyaa:category>Art - Anime</nyaa:category>
+<nyaa:size>20.2 GiB</nyaa:size>
+<nyaa:comments>1</nyaa:comments>
+<nyaa:trusted>No</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+<!-- Item with no infoHash — should be skipped -->
+<item>
+<title>[BadUpload] Test Upload No Hash</title>
+<link>https://sukebei.nyaa.si/download/1111111.torrent</link>
+<guid isPermaLink="true">https://sukebei.nyaa.si/view/1111111</guid>
+<pubDate>Mon, 09 Aug 2021 17:11:34 -0000</pubDate>
+<nyaa:seeders>5</nyaa:seeders>
+<nyaa:leechers>1</nyaa:leechers>
+<nyaa:downloads>100</nyaa:downloads>
+<nyaa:infoHash></nyaa:infoHash>
+<nyaa:categoryId>1_1</nyaa:categoryId>
+<nyaa:category>Art - Anime</nyaa:category>
+<nyaa:size>8.7 GiB</nyaa:size>
+<nyaa:trusted>No</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+<!-- Item with 1080p in title — for resolution filtering -->
+<item>
+<title>[Hentai 3D][MMD][Uncen] Touhou test ❤️ 1080P</title>
+<link>https://sukebei.nyaa.si/download/2735689.torrent</link>
+<guid isPermaLink="true">https://sukebei.nyaa.si/view/2735689</guid>
+<pubDate>Wed, 05 Jun 2019 06:15:52 -0000</pubDate>
+<nyaa:seeders>1</nyaa:seeders>
+<nyaa:leechers>0</nyaa:leechers>
+<nyaa:downloads>2763</nyaa:downloads>
+<nyaa:infoHash>12c90f6a9e9afb312eca8fb104adab769176eabb</nyaa:infoHash>
+<nyaa:categoryId>1_1</nyaa:categoryId>
+<nyaa:category>Art - Anime</nyaa:category>
+<nyaa:size>297.4 MiB</nyaa:size>
+<nyaa:comments>0</nyaa:comments>
+<nyaa:trusted>No</nyaa:trusted>
+<nyaa:remake>Yes</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+</channel>
+</rss>
