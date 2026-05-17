@@ -1,0 +1,117 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:nyaa="https://nyaa.si/xmlns/nyaa" version="2.0">
+<channel>
+<title>Nyaa - "Frieren" - Torrent File RSS</title>
+<description>RSS Feed for "Frieren"</description>
+<link>https://nyaa.si/</link>
+
+<!-- Standard item: 1080p batch, all fields present -->
+<item>
+<title>[9volt] Sousou no Frieren - Season 2 (WEB 1080p HEVC EAC-3 Dual Audio) | Frieren: Beyond Journey's End (2026) (Batch S02 S2)</title>
+<link>https://nyaa.si/download/2106580.torrent</link>
+<guid isPermaLink="true">https://nyaa.si/view/2106580</guid>
+<pubDate>Tue, 05 May 2026 20:50:27 -0000</pubDate>
+<nyaa:seeders>125</nyaa:seeders>
+<nyaa:leechers>23</nyaa:leechers>
+<nyaa:downloads>1316</nyaa:downloads>
+<nyaa:infoHash>2fd2133f28fbd29021b775c17c8e1cf5aceb9a15</nyaa:infoHash>
+<nyaa:categoryId>1_2</nyaa:categoryId>
+<nyaa:category>Anime - English-translated</nyaa:category>
+<nyaa:size>31.1 GiB</nyaa:size>
+<nyaa:comments>5</nyaa:comments>
+<nyaa:trusted>No</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ <a href="https://nyaa.si/view/2106580">#2106580</a> | 31.1 GiB | Anime - English-translated | 2fd2133f28fbd29021b775c17c8e1cf5aceb9a15 ]]></description>
+</item>
+
+<!-- Item with seeders >= 30000 — should be clamped to 0 -->
+<item>
+<title>[SubsPlease] Sousou no Frieren S2 - 09 (1080p) [AABBCCDD].mkv</title>
+<link>https://nyaa.si/download/9999999.torrent</link>
+<guid isPermaLink="true">https://nyaa.si/view/9999999</guid>
+<pubDate>Fri, 20 Mar 2026 15:00:47 -0000</pubDate>
+<nyaa:seeders>99999</nyaa:seeders>
+<nyaa:leechers>99999</nyaa:leechers>
+<nyaa:downloads>34543</nyaa:downloads>
+<nyaa:infoHash>e738213eba3cb50034e8c37955d7f58c7b9ae53f</nyaa:infoHash>
+<nyaa:categoryId>1_2</nyaa:categoryId>
+<nyaa:category>Anime - English-translated</nyaa:category>
+<nyaa:size>1.4 GiB</nyaa:size>
+<nyaa:trusted>Yes</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+<!-- Item with no infoHash — should be skipped -->
+<item>
+<title>[BadUpload] Frieren S2 - 01 (1080p)</title>
+<link>https://nyaa.si/download/1111111.torrent</link>
+<guid isPermaLink="true">https://nyaa.si/view/1111111</guid>
+<pubDate>Fri, 20 Mar 2026 10:00:00 -0000</pubDate>
+<nyaa:seeders>5</nyaa:seeders>
+<nyaa:leechers>1</nyaa:leechers>
+<nyaa:downloads>10</nyaa:downloads>
+<nyaa:infoHash></nyaa:infoHash>
+<nyaa:categoryId>1_2</nyaa:categoryId>
+<nyaa:category>Anime - English-translated</nyaa:category>
+<nyaa:size>1.4 GiB</nyaa:size>
+<nyaa:trusted>No</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+<!-- Item in non-anime category (3_x) — should be skipped -->
+<item>
+<title>[SomeGroup] Frieren OST Vol.2</title>
+<link>https://nyaa.si/download/2222222.torrent</link>
+<guid isPermaLink="true">https://nyaa.si/view/2222222</guid>
+<pubDate>Fri, 20 Mar 2026 10:00:00 -0000</pubDate>
+<nyaa:seeders>10</nyaa:seeders>
+<nyaa:leechers>2</nyaa:leechers>
+<nyaa:downloads>100</nyaa:downloads>
+<nyaa:infoHash>aaaa133f28fbd29021b775c17c8e1cf5aceb9a15</nyaa:infoHash>
+<nyaa:categoryId>3_1</nyaa:categoryId>
+<nyaa:category>Audio - Lossless</nyaa:category>
+<nyaa:size>500.0 MiB</nyaa:size>
+<nyaa:trusted>No</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+<!-- Episode 9 item — for episode matching tests -->
+<item>
+<title>[Erai-raws] Sousou no Frieren 2nd Season - 09 [1080p CR WEB-DL AVC AAC][MultiSub][15B7C196]</title>
+<link>https://nyaa.si/download/2088335.torrent</link>
+<guid isPermaLink="true">https://nyaa.si/view/2088335</guid>
+<pubDate>Fri, 20 Mar 2026 15:00:47 -0000</pubDate>
+<nyaa:seeders>1542</nyaa:seeders>
+<nyaa:leechers>7</nyaa:leechers>
+<nyaa:downloads>34543</nyaa:downloads>
+<nyaa:infoHash>e738213eba3cb50034e8c37955d7f58c7b9ae53f</nyaa:infoHash>
+<nyaa:categoryId>1_2</nyaa:categoryId>
+<nyaa:category>Anime - English-translated</nyaa:category>
+<nyaa:size>1.4 GiB</nyaa:size>
+<nyaa:trusted>Yes</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+<!-- 480p item — for resolution filtering tests -->
+<item>
+<title>[SubsPlease] Sousou no Frieren S2 - 09 (480p) [82D92320].mkv</title>
+<link>https://nyaa.si/download/2088345.torrent</link>
+<guid isPermaLink="true">https://nyaa.si/view/2088345</guid>
+<pubDate>Fri, 20 Mar 2026 15:01:35 -0000</pubDate>
+<nyaa:seeders>49</nyaa:seeders>
+<nyaa:leechers>0</nyaa:leechers>
+<nyaa:downloads>3537</nyaa:downloads>
+<nyaa:infoHash>6d811a790cf3b42ed05f5832c65f80b3a8fb3134</nyaa:infoHash>
+<nyaa:categoryId>1_2</nyaa:categoryId>
+<nyaa:category>Anime - English-translated</nyaa:category>
+<nyaa:size>372.2 MiB</nyaa:size>
+<nyaa:trusted>Yes</nyaa:trusted>
+<nyaa:remake>No</nyaa:remake>
+<description><![CDATA[ test ]]></description>
+</item>
+
+</channel>
+</rss>
