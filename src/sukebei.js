@@ -325,7 +325,19 @@ export default {
 
   async batch (query, options = {}) {
     if (!query.titles?.length) return []
-    const queries = query.titles.slice(0, 3)
+
+    // Fixed: batch queries must be tried FIRST, before the plain title fallback.
+    // Original code passed plain titles directly — this meant the first query was
+    // always the bare title, so batch-specific keywords were never reached if
+    // the plain title returned results (which it usually does).
+    const baseTitle = query.titles[0]
+    const queries = [
+      `${baseTitle} batch`,
+      `${baseTitle} complete`,
+      `${baseTitle} season`,
+      ...query.titles.slice(0, 3),  // plain title fallbacks after batch-specific queries
+    ]
+
     const results = await fetchFirstResults(
       query.fetch, queries,
       { resolution: query.resolution || '', isBatch: true },
