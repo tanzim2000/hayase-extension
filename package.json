@@ -7,7 +7,7 @@
   "main": "index.json",
   "scripts": {
     "build": "node build.mjs",
-    "watch": "node build.mjs --watch"
+    "watch": "node build.mjs --watch",
     "test": "vitest run",
     "test:watch": "vitest"
   },
