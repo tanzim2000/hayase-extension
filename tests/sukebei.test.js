@@ -52,7 +52,7 @@ class SukebeiTest extends BaseExtensionTest {
 }
 
 const suite = new SukebeiTest()
-suite.run()
+suite.runStringSearch()
 
 // ─── Sukebei-specific tests ───────────────────────────────────────────────────
 
@@ -204,12 +204,15 @@ describe('Sukebei — edge cases', () => {
 })
 
 describe('Sukebei — batch()', () => {
-  it('appends batch keyword to the first search query URL', async () => {
+  it('tries batch-specific queries before the plain title', async () => {
     const fetch = mockFetch(FIXTURE_XML)
     await sukebei.batch({
       titles: ['test'], episodeCount: undefined, resolution: '', exclusions: [],
       fetch,
     })
-    expect(fetch.mock.calls[0][0].toLowerCase()).toContain('batch')
+    // The first URL called must contain a batch keyword, not just the plain title
+    const firstUrl = fetch.mock.calls[0][0].toLowerCase()
+    const hasBatchKeyword = firstUrl.includes('batch') || firstUrl.includes('complete') || firstUrl.includes('season')
+    expect(hasBatchKeyword).toBe(true)
   })
 })

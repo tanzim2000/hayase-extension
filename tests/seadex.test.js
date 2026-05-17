@@ -53,7 +53,7 @@ class SeaDexTest extends BaseExtensionTest {
 }
 
 const suite = new SeaDexTest()
-suite.run()
+suite.runIdBased()
 
 // ─── SeaDex-specific tests ────────────────────────────────────────────────────
 

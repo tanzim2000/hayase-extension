@@ -54,7 +54,7 @@ class SubsPleaseTest extends BaseExtensionTest {
 // Override test() shared check since SubsPlease uses schedule endpoint
 // We handle this by making fixtureFetch return valid JSON for both endpoints
 const suite = new SubsPleaseTest()
-suite.run()
+suite.runStringSearch()
 
 // ─── SubsPlease-specific tests ────────────────────────────────────────────────
 

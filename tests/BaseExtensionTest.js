@@ -3,41 +3,32 @@
 // Shared base class for all hayase-extension test files.
 //
 // USAGE:
-//   Every new extension test MUST extend this class and call
-//   super() with the extension's default export and a fixture fetch function.
+//   Every new extension test MUST extend this class and call ONE of:
+//
+//   suite.run()              — shared tests only (result shape, network errors, test())
+//   suite.runStringSearch()  — run() + string-search specific tests:
+//                              - empty titles MUST return []
+//                              - batch() results MUST have type="batch"
+//   suite.runIdBased()       — run() + ID-based specific tests:
+//                              - empty titles MUST throw a descriptive Error
+//                              - batch() results may have source-specific types (best, alt, etc.)
+//
+// WHICH ONE TO USE:
+//   String-search sources (Nyaa, Sukebei, Tokyo Toshokan, acg.rip, SubsPlease):
+//     → suite.runStringSearch()
+//
+//   ID-based sources (SeaDex, AnimeTosho):
+//     → suite.runIdBased()
 //
 // EXAMPLE:
-//   import BaseExtensionTest from './BaseExtensionTest.js'
-//   import { readFileSync } from 'fs'
-//
-//   const FIXTURE = readFileSync('./tests/fixtures/myext.xml', 'utf-8')
-//
-//   class MyExtTest extends BaseExtensionTest {
+//   class NyaasiTest extends BaseExtensionTest {
 //     constructor() {
-//       super({
-//         extension: myExtension,           // the default export from src/myext.js
-//         fixtureFetch: () => mockFetch(FIXTURE), // fetch mock returning fixture
-//         name: 'MyExt',                    // used in test descriptions
-//       })
+//       super({ extension: nyaasi, fixtureFetch: () => mockFetch(FIXTURE), name: 'Nyaa' })
 //     }
 //   }
-//
-//   const suite = new MyExtTest()
-//   suite.run() // registers all shared tests via describe/it
-//
-// WHAT THIS ENFORCES:
-//   - Every extension result has the correct shape (title, link, hash, etc.)
-//   - accuracy is always 'high', 'medium', or 'low'
-//   - link is always a valid magnet URI or .torrent URL
-//   - test() returns true when reachable
-//   - test() throws a user-friendly error on HTTP errors
-//   - single() returns [] when titles is empty
-//   - single() throws a user-friendly error on network failure
-//
-// WHAT YOU ADD IN YOUR OWN TEST FILE:
-//   - Source-specific field extraction tests (title, hash, size, seeders, etc.)
-//   - Source-specific option tests (keyword, domain, category, etc.)
-//   - Source-specific edge cases (episode matching, resolution filtering, etc.)
+//   const suite = new NyaasiTest()
+//   suite.runStringSearch()  // enforces string-search contract
+//   // then add source-specific tests below
 
 import { describe, it, expect, vi } from 'vitest'
 
@@ -168,11 +159,10 @@ export default class BaseExtensionTest {
   }
 
   /**
-   * Register all shared tests.
-   * Call this at the bottom of your test file after instantiating your class.
-   *
-   * These tests run for EVERY extension — if any fail, the extension
-   * does not meet the minimum requirements for this repo.
+   * Shared tests that apply to EVERY extension regardless of type.
+   * Checks result shape, network error handling, and test() method.
+   * Called internally by runStringSearch() and runIdBased().
+   * Do not call this directly — use runStringSearch() or runIdBased().
    */
   run () {
     const { extension, name, fixtureFetch } = this
@@ -181,8 +171,6 @@ export default class BaseExtensionTest {
     describe(`${name} — result shape`, () => {
       it('every result from single() has the correct shape', async () => {
         const results = await extension.single(this.makeQuery())
-        // Skip if the extension legitimately returns empty for this query
-        // (e.g. ID-based extensions with no anilistId match) — that's OK
         for (const result of results) {
           assertValidResult(result)
         }
@@ -192,8 +180,6 @@ export default class BaseExtensionTest {
         const results = await extension.batch(this.makeQuery())
         for (const result of results) {
           assertValidResult(result)
-          // batch() results must have type='batch'
-          expect(result.type, 'batch() results must have type="batch"').toBe('batch')
         }
       })
 
@@ -205,31 +191,12 @@ export default class BaseExtensionTest {
       })
     })
 
-    // ── Empty titles ──────────────────────────────────────────────────────────
-    describe(`${name} — empty titles`, () => {
-      it('single() returns [] when titles is empty', async () => {
-        const results = await extension.single(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
-        expect(results).toEqual([])
-      })
-
-      it('batch() returns [] when titles is empty', async () => {
-        const results = await extension.batch(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
-        expect(results).toEqual([])
-      })
-
-      it('movie() returns [] when titles is empty', async () => {
-        const results = await extension.movie(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
-        expect(results).toEqual([])
-      })
-    })
-
     // ── Network errors ────────────────────────────────────────────────────────
     describe(`${name} — network errors`, () => {
       it('single() throws a user-friendly error on network failure', async () => {
         await expect(
           extension.single(this.makeQuery({ fetch: mockFetchError() }))
         ).rejects.toThrow()
-        // Error message must not be a raw JS error — must be human readable
         try {
           await extension.single(this.makeQuery({ fetch: mockFetchError('fetch failed') }))
         } catch (err) {
@@ -250,6 +217,84 @@ export default class BaseExtensionTest {
         await expect(
           extension.test({ fetch: mockFetch('Service Unavailable', 503) })
         ).rejects.toThrow('503')
+      })
+    })
+  }
+
+  /**
+   * Tests for STRING-SEARCH based extensions (Nyaa, Sukebei, acg.rip, etc.)
+   *
+   * Enforces:
+   *   - empty titles MUST return []  (no titles = no query = no results)
+   *   - batch() results MUST have type="batch"
+   *
+   * Call this instead of run() for string-search sources.
+   */
+  runStringSearch () {
+    this.run()
+
+    const { extension, name, fixtureFetch } = this
+
+    describe(`${name} — empty titles (string-search)`, () => {
+      it('single() returns [] when titles is empty', async () => {
+        const results = await extension.single(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
+        expect(results).toEqual([])
+      })
+
+      it('batch() returns [] when titles is empty', async () => {
+        const results = await extension.batch(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
+        expect(results).toEqual([])
+      })
+
+      it('movie() returns [] when titles is empty', async () => {
+        const results = await extension.movie(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
+        expect(results).toEqual([])
+      })
+    })
+
+    describe(`${name} — batch type (string-search)`, () => {
+      it('every result from batch() has type="batch"', async () => {
+        const results = await extension.batch(this.makeQuery())
+        for (const result of results) {
+          expect(result.type, `batch() result "${result.title}" must have type="batch"`).toBe('batch')
+        }
+      })
+    })
+  }
+
+  /**
+   * Tests for ID-BASED extensions (SeaDex, AnimeTosho, etc.)
+   *
+   * Enforces:
+   *   - empty titles MUST throw a descriptive Error
+   *     (ID-based sources require titles as a fallback — missing titles is a misconfiguration)
+   *   - batch() results may have source-specific types (e.g. 'best', 'alt')
+   *     and are NOT required to have type="batch"
+   *
+   * Call this instead of run() for ID-based sources.
+   */
+  runIdBased () {
+    this.run()
+
+    const { extension, name, fixtureFetch } = this
+
+    describe(`${name} — empty titles (ID-based)`, () => {
+      it('single() throws a descriptive Error when titles is empty', async () => {
+        await expect(
+          extension.single(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
+        ).rejects.toBeInstanceOf(Error)
+      })
+
+      it('batch() throws a descriptive Error when titles is empty', async () => {
+        await expect(
+          extension.batch(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
+        ).rejects.toBeInstanceOf(Error)
+      })
+
+      it('movie() throws a descriptive Error when titles is empty', async () => {
+        await expect(
+          extension.movie(this.makeQuery({ titles: [], fetch: fixtureFetch() }))
+        ).rejects.toBeInstanceOf(Error)
       })
     })
   }
