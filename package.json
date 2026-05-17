@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "vitest": "^3.0.0"
   }
 }
