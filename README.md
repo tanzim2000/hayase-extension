@@ -34,7 +34,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 ## Extensions
 
 <!-- LAST_CHECKED -->
-> 🕐 Sources last verified: May 17, 2026 at 03:10 UTC
+> 🕐 Sources last verified: August 04, 2026 at 04:57 UTC
 <!-- /LAST_CHECKED -->
 
 ### Torrent Sources
