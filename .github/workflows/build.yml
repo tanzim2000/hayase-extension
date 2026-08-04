@@ -1,7 +1,7 @@
 # build.yml — GitHub Actions workflow for hayase-extension
 #
-# Triggers automatically when you push changes to src/, tests/, build.mjs,
-# package.json, or this workflow file itself.
+# Triggers weekly on a schedule, or manually from the Actions tab.
+# No longer runs on push.
 #
 # What it does:
 #   1. Spins up a Linux machine in the cloud
@@ -17,17 +17,13 @@
 name: build
 
 on:
-  push:
-    branches: [main]
-    paths:
-      # Only trigger when these files change — no point rebuilding for README edits
-      - 'src/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'build.mjs'
-      - '.github/workflows/build.yml'
-  
-  # Allows you to manually trigger the workflow from GitHub's Actions tab
+  # Runs every Monday at 06:00 UTC. GitHub Actions cron is UTC-only and
+  # best-effort (can be a few minutes late during high load).
+  # Change the cron string to adjust day/time — https://crontab.guru helps.
+  schedule:
+    - cron: '0 6 * * 1'
+
+  # Lets you manually trigger the workflow from GitHub's Actions tab
   workflow_dispatch:
 
 jobs:
