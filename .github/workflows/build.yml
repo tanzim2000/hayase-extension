@@ -1,29 +1,38 @@
 # build.yml — GitHub Actions workflow for hayase-extension
 #
-# Triggers weekly on a schedule, or manually from the Actions tab.
-# No longer runs on push.
+# Triggers automatically when you push changes to src/, build.mjs,
+# package.json, or this workflow file itself.
+# Also runs once a week on its own, and can be triggered manually
+# any time from GitHub's Actions tab.
 #
 # What it does:
 #   1. Spins up a Linux machine in the cloud
-#   2. Installs Node.js and dependencies (including Vitest)
-#   3. Runs all tests — if any fail, the workflow stops here
-#   4. Runs the build script (node build.mjs)
-#   5. Updates the "last verified" date in README.md
-#   6. If dist/ or README changed, commits and pushes back to your repo
+#   2. Installs Node.js and esbuild
+#   3. Runs the build script (node build.mjs)
+#   4. If dist/ changed, commits and pushes the new bundles back to your repo
 #
 # You never need to touch dist/ manually — this bot handles it.
-# Tests must pass before any build or commit happens.
 
 name: build
 
 on:
-  # Runs every Monday at 06:00 UTC. GitHub Actions cron is UTC-only and
-  # best-effort (can be a few minutes late during high load).
-  # Change the cron string to adjust day/time — https://crontab.guru helps.
+  push:
+    branches: [main]
+    paths:
+      # Only trigger when these files change — no point rebuilding for README edits
+      - 'src/**'
+      - 'package.json'
+      - 'build.mjs'
+      - '.github/workflows/build.yml'
+
+  # Runs every Monday at 06:00 UTC (midnight Saskatchewan time), no matter
+  # what happened during the week — a safety net in case something upstream
+  # changed without a matching commit to this repo.
   schedule:
     - cron: '0 6 * * 1'
 
-  # Lets you manually trigger the workflow from GitHub's Actions tab
+  # Lets you manually trigger the workflow from GitHub's Actions tab,
+  # anytime, regardless of the triggers above.
   workflow_dispatch:
 
 jobs:
@@ -43,35 +52,22 @@ jobs:
         with:
           node-version: '24'
 
-      # Step 3 — Install all dependencies including Vitest
+      # Step 3 — Install dependencies (reads package.json devDependencies)
       - run: npm install
 
-      # Step 4 — Run all tests
-      # If any test fails, the workflow stops here — nothing gets built or committed
-      - name: Run tests
-        run: npm run test
-
-      # Step 5 — Run the build script → generates dist/*.js
+      # Step 4 — Run the build script → generates dist/*.js
       - run: npm run build
 
-      # Step 6 — Update "last verified" date in README.md
-      # Rewrites the line between <!-- LAST_CHECKED --> markers with today's date (UTC).
-      # Runs after a successful build so the date only updates when everything works.
-      - name: Update last verified date in README
-        run: |
-          DATE=$(date -u '+%B %d, %Y at %H:%M UTC')
-          sed -i "s|> 🕐 Sources last verified:.*|> 🕐 Sources last verified: $DATE|" README.md
-
-      # Step 7 — If dist/ or README changed, commit and push
-      # If nothing changed, skip the commit
+      # Step 5 — If dist/ changed, commit and push the new bundles
+      # If nothing changed (e.g. you only edited README), skip the commit
       - name: Commit built bundles if changed
         run: |
-          if git diff --quiet -- dist/ README.md && ! git ls-files --others --exclude-standard dist/ | grep -q .; then
-            echo "Nothing to commit"
+          if git diff --quiet -- dist/ && ! git ls-files --others --exclude-standard dist/ | grep -q .; then
+            echo "dist/ unchanged, nothing to commit"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/ README.md
-          git commit -m "build: refresh bundles and update last verified date"
+          git add dist/
+          git commit -m "build: refresh bundles"
           git push
