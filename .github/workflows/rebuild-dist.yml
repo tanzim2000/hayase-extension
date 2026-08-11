@@ -2,8 +2,6 @@
 #
 # Triggers automatically when you push changes to src/, build.mjs,
 # package.json, or this workflow file itself.
-# Also runs once a week on its own, and can be triggered manually
-# any time from GitHub's Actions tab.
 #
 # What it does:
 #   1. Spins up a Linux machine in the cloud
@@ -13,7 +11,7 @@
 #
 # You never need to touch dist/ manually — this bot handles it.
 
-name: build
+name: Running Compilation of the extensions in /src
 
 on:
   push:
@@ -24,16 +22,6 @@ on:
       - 'package.json'
       - 'build.mjs'
       - '.github/workflows/build.yml'
-
-  # Runs every Monday at 06:00 UTC (midnight Saskatchewan time), no matter
-  # what happened during the week — a safety net in case something upstream
-  # changed without a matching commit to this repo.
-  schedule:
-    - cron: '0 6 * * 1'
-
-  # Lets you manually trigger the workflow from GitHub's Actions tab,
-  # anytime, regardless of the triggers above.
-  workflow_dispatch:
 
 jobs:
   build:
