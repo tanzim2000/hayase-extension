@@ -1,4 +1,4 @@
-# build.yml — GitHub Actions workflow for hayase-extension
+# rebuild-dist.yml — GitHub Actions workflow for hayase-extension
 #
 # Triggers automatically when you push changes to src/, build.mjs,
 # package.json, or this workflow file itself.
@@ -21,7 +21,7 @@ on:
       - 'src/**'
       - 'package.json'
       - 'build.mjs'
-      - '.github/workflows/build.yml'
+      - '.github/workflows/rebuild-dist.yml'
 
 jobs:
   build:
