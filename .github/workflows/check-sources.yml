@@ -44,4 +44,4 @@ jobs:
       - name: Check all sources
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-        run: node check-sources.mjs
+        run: node scripts/check-sources.mjs
