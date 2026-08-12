@@ -1,0 +1,47 @@
+# check-sources.yml — GitHub Actions workflow for hayase-extension
+#
+# Checks whether every extension's source is still responding, by
+# calling each extension's own test() function — the same one Hayase
+# itself uses to health-check an extension. See check-sources.mjs for
+# the actual logic; this file just runs it on a schedule.
+#
+# Runs weekly on its own, or anytime you trigger it manually from
+# GitHub's Actions tab. Sends one full pass/fail report to ntfy either way.
+#
+# SETUP REQUIRED — before this will work:
+#   1. Go to your repo → Settings → Secrets and variables → Actions
+#   2. Click "New repository secret"
+#   3. Name:  NTFY_TOPIC
+#   4. Value: your ntfy.sh topic name (just the topic, not the full URL)
+# This keeps your topic name out of the public repo — see check-sources.mjs
+# for why that matters.
+
+name: Verify extension sources
+
+on:
+  # Runs every Monday at 06:00 UTC (midnight Saskatchewan time),
+  # regardless of whether anything changed that week.
+  schedule:
+    - cron: '0 6 * * 1'
+
+  # Lets you manually trigger the check anytime from GitHub's Actions tab.
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 — Check out your repo so the script can read src/
+      - uses: actions/checkout@v5
+
+      # Step 2 — Install Node.js 24 (has fetch() built in — no extra installs needed)
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      # Step 3 — Run every extension's test() function, report to ntfy
+      - name: Check all sources
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: node check-sources.mjs
