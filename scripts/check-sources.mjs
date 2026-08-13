@@ -100,55 +100,66 @@ async function updateReadmeTimestamp () {
 }
 
 /**
- * Send the full report to ntfy as one notification, formatted as a
- * markdown table. Note: markdown only renders when you open the
- * notification in the ntfy app/web client — the initial banner/lock
- * screen preview on your phone shows plain text, since that's an OS
- * limitation, not something this script controls.
+ * Send the full report to ntfy as one plain-text notification.
+ *
+ * Sent as JSON rather than headers+body, because the title contains
+ * emoji — HTTP headers are latin-1 only, so raw unicode in an
+ * X-Title header gets mangled. ntfy's JSON endpoint is UTF-8 safe.
+ *
+ * Body layout: any dead sources listed first (outside the main list),
+ * then the alive ones sorted fastest → slowest, with the fastest and
+ * slowest tagged.
  * @param {{ name: string, alive: boolean, message: string, ms: number|null }[]} results
  */
 async function sendReport (results) {
-	const deadCount = results.filter(r => !r.alive).length
+	const dead = results.filter(r => !r.alive)
+	const alive = results.filter(r => r.alive).sort((a, b) => a.ms - b.ms)
 
-	// Plain-text title for the system notification banner — headers
-	// don't reliably support markdown or raw unicode
-	const title = deadCount === 0
-		? `All ${results.length} sources alive`
-		: `${deadCount}/${results.length} source(s) down`
+	let title
+	if (dead.length === 0) {
+		title = `Hayase Extensions: All ${results.length} sources alive 👌`
+	} else if (alive.length === 0) {
+		title = results.length === 1
+			? `Hayase Extensions: The only source is dead 💀`
+			: `Hayase Extensions: All ${results.length} sources dead 💀`
+	} else {
+		title = `Hayase Extensions: ${alive.length} source${alive.length === 1 ? '' : 's'} alive; ${dead.length} dead`
+	}
 
-	const heading = deadCount === 0
-		? `# Hayase Extensions: All ${results.length} sources alive`
-		: `# Hayase Extensions: ${deadCount}/${results.length} sources down`
+	// Alive lines, fastest first. Only tag fastest/slowest when there
+	// are at least two — otherwise one line would get both tags.
+	const aliveLines = alive.map((r, i) => {
+		let tag = ''
+		if (alive.length > 1) {
+			if (i === 0) tag = ' [FASTEST]'
+			else if (i === alive.length - 1) tag = ' [SLOWEST]'
+		}
+		return `✅ ${r.name} (${r.ms}ms)${tag}`
+	})
 
-	// One row per extension. Alive rows show response time; dead rows
-	// show the error message that extension's test() threw.
-	const rows = results
-		.map(r => {
-			const status = r.alive ? '✅' : '❌'
-			const detail = r.alive ? `${r.ms}ms` : r.message
-			return `| ${status} | ${r.name} | ${detail} |`
-		})
-		.join('\n')
+	const sections = []
 
-	const body = [
-		heading,
-		'',
-		'| Status | Extension | Detail |',
-		'|---|---|---|',
-		rows,
-	].join('\n')
+	if (dead.length > 0) {
+		sections.push(dead.map(r => `🪦 ${r.name} couldn't make it!`).join('\n'))
+		// Only promise survivors if there actually are any — otherwise
+		// we'd print "rest of it is alive" above an empty list.
+		sections.push(alive.length > 0
+			? 'Rest of it is alive, more or less...'
+			: "Not a single one made it. That's everything, gone.")
+	}
 
-	const res = await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+	if (alive.length > 0) sections.push(aliveLines.join('\n'))
+
+	const res = await fetch('https://ntfy.sh/', {
 		method: 'POST',
-		headers: {
-			'Title': title,
-			'Priority': deadCount > 0 ? 'high' : 'default',
-			// ntfy converts these shortcodes into real emoji on the device
-			'Tags': deadCount > 0 ? 'warning' : 'white_check_mark',
-			// Tells ntfy to render the body as markdown when opened
-			'Markdown': 'yes',
-		},
-		body,
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			topic: NTFY_TOPIC,
+			title,
+			// 3 = default, 5 = high
+			priority: dead.length > 0 ? 5 : 3,
+			message: sections.join('\n\n'),
+		}),
 	})
 
 	if (!res.ok) {
