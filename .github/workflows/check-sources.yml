@@ -31,6 +31,10 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
+    # Give the bot permission to commit the README timestamp back to your repo
+    permissions:
+      contents: write
+
     steps:
       # Step 1 — Check out your repo so the script can read src/
       - uses: actions/checkout@v5
@@ -40,8 +44,26 @@ jobs:
         with:
           node-version: '24'
 
-      # Step 3 — Run every extension's test() function, report to ntfy
+      # Step 3 — Run every extension's test() function, report to ntfy,
+      # and rewrite the "Sources last verified" line in README.md
       - name: Check all sources
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: node scripts/check-sources.mjs
+
+      # Step 4 — Commit the updated README timestamp
+      # if: always() is required here — Step 3 exits with a failure code
+      # when a source is down, which would normally skip every step after
+      # it. We still want the timestamp committed either way.
+      - name: Commit README if changed
+        if: always()
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "README.md unchanged, nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "⠀"
+          git push
