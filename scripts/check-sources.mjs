@@ -5,12 +5,14 @@
 // No per-extension logic needed here — every extension already exports
 // test(query), so this script just loads each file and calls it.
 //
-// Usage: node check-sources.mjs
+// Usage: node scripts/check-sources.mjs
 //
 // At the end, sends one full report to ntfy — so you find out even if
-// you're not watching the GitHub Actions tab.
+// you're not watching the GitHub Actions tab — and rewrites the
+// "Sources last verified" line in README.md so it always reflects the
+// most recent actual run.
 
-import { readdir } from 'node:fs/promises'
+import { readdir, readFile, writeFile } from 'node:fs/promises'
 
 // The ntfy topic comes from a GitHub Actions secret, NOT hardcoded here.
 // This repo is public — anyone can read a committed file. If the topic
@@ -58,6 +60,42 @@ async function checkExtension (filename) {
 	} catch (err) {
 		return { name, alive: false, message: err.message || 'Unknown error' }
 	}
+}
+
+/**
+ * Rewrite the "Sources last verified" line in README.md with the
+ * current time, so the README always shows when this last actually ran
+ * instead of a stale hand-typed date.
+ *
+ * Looks for the block between <!-- LAST_CHECKED --> and
+ * <!-- /LAST_CHECKED --> markers in README.md and replaces it entirely.
+ */
+async function updateReadmeTimestamp () {
+	const readmePath = new URL('../README.md', import.meta.url)
+	const readme = await readFile(readmePath, 'utf8')
+
+	const now = new Date()
+	const datePart = now.toLocaleString('en-US', {
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric',
+		timeZone: 'UTC',
+	})
+	const timePart = now.toLocaleString('en-US', {
+		hour: '2-digit',
+		minute: '2-digit',
+		hour12: false,
+		timeZone: 'UTC',
+	})
+
+	const newBlock = `<!-- LAST_CHECKED -->\n> 🕐 Sources last verified: ${datePart} at ${timePart} UTC\n<!-- /LAST_CHECKED -->`
+
+	const updated = readme.replace(
+		/<!-- LAST_CHECKED -->[\s\S]*?<!-- \/LAST_CHECKED -->/,
+		newBlock,
+	)
+
+	await writeFile(readmePath, updated, 'utf8')
 }
 
 /**
@@ -109,6 +147,7 @@ for (const file of files) {
 }
 
 await sendReport(results)
+await updateReadmeTimestamp()
 
 const deadCount = results.filter(r => !r.alive).length
 console.log(`\n${results.length - deadCount}/${results.length} sources alive`)
