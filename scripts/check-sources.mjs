@@ -32,7 +32,7 @@ const SRC_DIR = new URL('../src/', import.meta.url)
 /**
  * Test one extension file by loading it and calling its test() function.
  * @param {string} filename — e.g. "nyaasi.js"
- * @returns {Promise<{ name: string, alive: boolean, message: string }>}
+ * @returns {Promise<{ name: string, alive: boolean, message: string, ms: number|null }>}
  */
 async function checkExtension (filename) {
 	const name = filename.replace(/\.js$/, '')
@@ -43,22 +43,23 @@ async function checkExtension (filename) {
 	try {
 		extension = (await import(fileUrl.href)).default
 	} catch (err) {
-		return { name, alive: false, message: `Failed to load file: ${err.message}` }
+		return { name, alive: false, message: `Failed to load file: ${err.message}`, ms: null }
 	}
 
 	// Step 2 — make sure it actually has a test() function to call
 	if (typeof extension?.test !== 'function') {
-		return { name, alive: false, message: 'No test() function exported — cannot verify' }
+		return { name, alive: false, message: 'No test() function exported — cannot verify', ms: null }
 	}
 
-	// Step 3 — call test(). Each extension's test() either resolves (alive)
-	// or throws a descriptive Error (dead) — that's the existing convention
-	// already used by every file in src/.
+	// Step 3 — call test(), timing how long it takes. Each extension's
+	// test() either resolves (alive) or throws a descriptive Error (dead)
+	// — that's the existing convention already used by every file in src/.
+	const start = Date.now()
 	try {
 		await extension.test({ fetch })
-		return { name, alive: true, message: 'OK' }
+		return { name, alive: true, message: 'OK', ms: Date.now() - start }
 	} catch (err) {
-		return { name, alive: false, message: err.message || 'Unknown error' }
+		return { name, alive: false, message: err.message || 'Unknown error', ms: Date.now() - start }
 	}
 }
 
@@ -99,23 +100,43 @@ async function updateReadmeTimestamp () {
 }
 
 /**
- * Send the full report to ntfy as one notification.
- * @param {{ name: string, alive: boolean, message: string }[]} results
+ * Send the full report to ntfy as one notification, formatted as a
+ * markdown table. Note: markdown only renders when you open the
+ * notification in the ntfy app/web client — the initial banner/lock
+ * screen preview on your phone shows plain text, since that's an OS
+ * limitation, not something this script controls.
+ * @param {{ name: string, alive: boolean, message: string, ms: number|null }[]} results
  */
 async function sendReport (results) {
 	const deadCount = results.filter(r => !r.alive).length
 
-	// Title stays plain ASCII — ntfy's Tags header (below) is what
-	// actually renders as an emoji in the notification, headers in
-	// general don't reliably support raw unicode.
+	// Plain-text title for the system notification banner — headers
+	// don't reliably support markdown or raw unicode
 	const title = deadCount === 0
 		? `All ${results.length} sources alive`
 		: `${deadCount}/${results.length} source(s) down`
 
-	// Body can safely contain unicode — it's not an HTTP header
-	const body = results
-		.map(r => `${r.alive ? '✅' : '❌'} ${r.name}${r.alive ? '' : ` — ${r.message}`}`)
+	const heading = deadCount === 0
+		? `# Hayase Extensions: All ${results.length} sources alive`
+		: `# Hayase Extensions: ${deadCount}/${results.length} sources down`
+
+	// One row per extension. Alive rows show response time; dead rows
+	// show the error message that extension's test() threw.
+	const rows = results
+		.map(r => {
+			const status = r.alive ? '✅' : '❌'
+			const detail = r.alive ? `${r.ms}ms` : r.message
+			return `| ${status} | ${r.name} | ${detail} |`
+		})
 		.join('\n')
+
+	const body = [
+		heading,
+		'',
+		'| Status | Extension | Detail |',
+		'|---|---|---|',
+		rows,
+	].join('\n')
 
 	const res = await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
 		method: 'POST',
@@ -124,6 +145,8 @@ async function sendReport (results) {
 			'Priority': deadCount > 0 ? 'high' : 'default',
 			// ntfy converts these shortcodes into real emoji on the device
 			'Tags': deadCount > 0 ? 'warning' : 'white_check_mark',
+			// Tells ntfy to render the body as markdown when opened
+			'Markdown': 'yes',
 		},
 		body,
 	})
