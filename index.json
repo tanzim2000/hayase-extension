@@ -216,7 +216,7 @@
     "manifestVersion": 2,
     "name": "Sukebei",
     "id": "anime.sukebei",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Nyaa's adult content sister site. Same RSS format, hentai anime and doujinshi.",
     "type": "torrent",
     "accuracy": "low",
@@ -232,8 +232,13 @@
     "options": {
       "domain": {
         "type": "string",
-        "description": "Sukebei base URL. Change to a mirror if sukebei.nyaa.si is blocked.",
+        "description": "Sukebei base URL. Tried first. Leave as-is unless the official site is blocked for you.",
         "default": "https://sukebei.nyaa.si"
+      },
+      "domains": {
+        "type": "string",
+        "description": "Optional fallback mirrors, comma-separated. Tried in order if the domain above doesn't respond. None are included by default.",
+        "default": ""
       },
       "category": {
         "type": "string",
