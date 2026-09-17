@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
 [![Extensions](https://img.shields.io/badge/extensions-9-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
-[![Build](https://github.com/tanzim2000/hayase-extension/actions/workflows/build.yml/badge.svg)](https://github.com/tanzim2000/hayase-extension/actions/workflows/build.yml)
+[![Sources](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml/badge.svg)](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml)
 
 
 A collection of torrent source extensions for [Hayase](https://github.com/hayase-app/hayase) — covering English subs, English dubs, non-English languages, and CJK fansubs.
@@ -40,13 +40,14 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | **Nyaa (Dub)** | Same as Nyaa but searches for English-dubbed releases. | Dub | 🇺🇸 | ✅ Yes |
 | **Nyaa (Non-English)** | Nyaa's non-English category. Set your language keyword in options (e.g. `Arabic`, `Hindi`, `Bangla`). | Dub | 🇸🇦 🇪🇬 🇮🇳 🇧🇩 + more | ✅ Yes |
 | **SeaDex** | Community-curated best and alt releases, matched by AniList ID. High accuracy. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
-| **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
+| **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows. | Sub | 🇺🇸 🇯🇵 | ⚠️ Yes\* |
 | **AnimeTosho** | ID-based search via AniDB. Mirrors Nyaa and Tokyo Toshokan with high accuracy. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
 | **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | ✅ Yes |
 | **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
 | **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ❌ No |
 
-> The **Available** column is rewritten automatically by `check-sources.mjs` on every run — it only reflects whether the source responds, not whether search results are good. See [Known Issues](#known-issues) for problems (like Tokyo Toshokan's) that the automated check doesn't catch.
+> The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds* — it can't detect whether search results are actually good.
+> \* Reachable, but see [Known Issues](#known-issues) below — it doesn't actually work right now.
 
 ### Extension Options
 
@@ -287,7 +288,7 @@ Set the `accuracy` field honestly. Hayase uses it to rank and filter results for
 
 ## Known Issues
 
-- **Tokyo Toshokan** is currently not working. See the [Issues](https://github.com/tanzim2000/hayase-extension/issues) section for details and progress.
+- **Tokyo Toshokan**\* is currently not working. See the [Issues](https://github.com/tanzim2000/hayase-extension/issues) section for details and progress.
 
 ---
 
