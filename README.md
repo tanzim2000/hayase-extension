@@ -1,18 +1,14 @@
 # hayase-extension
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
-[![Sources](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml/badge.svg)](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE)
-[![Stars](https://img.shields.io/github/stars/tanzim2000/hayase-extension?style=social)](https://github.com/tanzim2000/hayase-extension/stargazers)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
+[![Extensions](https://img.shields.io/badge/extensions-9-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
+[![Build](https://github.com/tanzim2000/hayase-extension/actions/workflows/build.yml/badge.svg)](https://github.com/tanzim2000/hayase-extension/actions/workflows/build.yml)
 
 
 A collection of torrent source extensions for [Hayase](https://github.com/hayase-app/hayase) — covering English subs, English dubs, non-English languages, and CJK fansubs.
 
-|⭐ Found this useful?|
-|--|
-|Star the repo and share with others — it helps others discover it!|
-
-> **Disclaimer:** This project provides source code for search extensions that interface with publicly available torrent indexers. It does not host, distribute, or link to any copyrighted content. Users are solely responsible for ensuring their use complies with applicable laws and the terms of service of any indexer they connect to.
+> **Disclaimer:** This project is for educational purposes only. It provides source code for search extensions that interface with publicly available torrent indexers. It does not host, distribute, or link to any copyrighted content. Users are solely responsible for ensuring their use complies with applicable laws and the terms of service of any indexer they connect to.
 
 ---
 
@@ -33,22 +29,24 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 ## Extensions
 
 <!-- LAST_CHECKED -->
-> 🕐 Sources last verified: September 14, 2026 at 11:14 UTC
+> 🕐 Sources last verified: May 17, 2026 at 03:10 UTC
 <!-- /LAST_CHECKED -->
 
 ### Torrent Sources
 
-| Name | Description | Media | Languages |
-|---|---|---|---|
-| **Nyaa** | Main anime torrent tracker. Sub-focused English releases. | Sub | 🇺🇸 🇯🇵 |
-| **Nyaa (Dub)** | Same as Nyaa but searches for English-dubbed releases. | Dub | 🇺🇸 |
-| **Nyaa (Non-English)** | Nyaa's non-English category. Set your language keyword in options (e.g. `Arabic`, `Hindi`, `Bangla`). | Dub | 🇸🇦 🇪🇬 🇮🇳 🇧🇩 + more |
-| **SeaDex** | Community-curated best and alt releases, matched by AniList ID. High accuracy. | Sub | 🇺🇸 🇯🇵 |
-| **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows. | Sub | 🇺🇸 🇯🇵 |
-| **AnimeTosho** | ID-based search via AniDB. Mirrors Nyaa and Tokyo Toshokan with high accuracy. | Sub | 🇺🇸 🇯🇵 |
-| **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 |
-| **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 |
-| **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 |
+| Name | Description | Media | Languages | Available |
+|---|---|---|---|---|
+| **Nyaa** | Main anime torrent tracker. Sub-focused English releases. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
+| **Nyaa (Dub)** | Same as Nyaa but searches for English-dubbed releases. | Dub | 🇺🇸 | ✅ Yes |
+| **Nyaa (Non-English)** | Nyaa's non-English category. Set your language keyword in options (e.g. `Arabic`, `Hindi`, `Bangla`). | Dub | 🇸🇦 🇪🇬 🇮🇳 🇧🇩 + more | ✅ Yes |
+| **SeaDex** | Community-curated best and alt releases, matched by AniList ID. High accuracy. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
+| **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
+| **AnimeTosho** | ID-based search via AniDB. Mirrors Nyaa and Tokyo Toshokan with high accuracy. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
+| **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | ✅ Yes |
+| **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
+| **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ❌ No |
+
+> The **Available** column is rewritten automatically by `check-sources.mjs` on every run — it only reflects whether the source responds, not whether search results are good. See [Known Issues](#known-issues) for problems (like Tokyo Toshokan's) that the automated check doesn't catch.
 
 ### Extension Options
 
