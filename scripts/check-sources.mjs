@@ -8,9 +8,10 @@
 // Usage: node scripts/check-sources.mjs
 //
 // At the end, sends one full report to ntfy — so you find out even if
-// you're not watching the GitHub Actions tab — and rewrites the
-// "Sources last verified" line in README.md so it always reflects the
-// most recent actual run.
+// you're not watching the GitHub Actions tab — and rewrites both the
+// "Sources last verified" line and the Available column of the Torrent
+// Sources table in README.md, so it always reflects the most recent
+// actual run instead of a hand-typed snapshot.
 
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 
@@ -100,6 +101,67 @@ async function updateReadmeTimestamp () {
 }
 
 /**
+ * Rewrite the "Available" cell of every row in the README's Torrent
+ * Sources table, based on this run's actual results — so the table
+ * never drifts from reality the way a hand-typed one would.
+ *
+ * Several manifest entries in index.json can share one src/ file (e.g.
+ * "Nyaa", "Nyaa (Dub)", and "Nyaa (Non-English)" are all backed by
+ * nyaasi.js), so this maps each manifest entry's `code` field back to
+ * the src/ filename that was actually tested, then updates every
+ * README row whose Name cell matches that manifest entry's `name`.
+ *
+ * Only the Available cell is touched — Description/Media/Languages are
+ * left exactly as a human wrote them.
+ * @param {{ name: string, alive: boolean, message: string, ms: number|null }[]} results
+ */
+async function updateReadmeAvailability (results) {
+	const readmePath = new URL('../README.md', import.meta.url)
+	const indexPath = new URL('../index.json', import.meta.url)
+
+	const [readme, indexRaw] = await Promise.all([
+		readFile(readmePath, 'utf8'),
+		readFile(indexPath, 'utf8'),
+	])
+
+	const manifest = JSON.parse(indexRaw)
+
+	// src/ filename (no extension) → alive, straight from this run.
+	const aliveByFile = new Map(results.map(r => [r.name, r.alive]))
+
+	// Manifest display name (e.g. "Nyaa (Dub)") → alive, resolved via
+	// the src/ file that actually backs that manifest entry.
+	const aliveByDisplayName = new Map()
+	for (const entry of manifest) {
+		const match = entry.code?.match(/\/([^/]+)\.js$/)
+		if (!match) continue
+		const fileKey = match[1]
+		if (aliveByFile.has(fileKey)) {
+			aliveByDisplayName.set(entry.name, aliveByFile.get(fileKey))
+		}
+	}
+
+	const updated = readme.split('\n').map(line => {
+		if (!line.startsWith('|')) return line
+
+		const cells = line.split('|')
+		// A real data row looks like: "", " **Nyaa** ", ..., " ✅ Yes ", ""
+		// — need at least a name cell and an Available cell between the
+		// leading/trailing empties from split().
+		if (cells.length < 4) return line
+
+		const rawName = cells[1].trim().replace(/\*\*/g, '')
+		if (!aliveByDisplayName.has(rawName)) return line
+
+		const alive = aliveByDisplayName.get(rawName)
+		cells[cells.length - 2] = ` ${alive ? '✅ Yes' : '❌ No'} `
+		return cells.join('|')
+	})
+
+	await writeFile(readmePath, updated.join('\n'), 'utf8')
+}
+
+/**
  * Send the full report to ntfy as one plain-text notification.
  *
  * Sent as JSON rather than headers+body, because the title contains
@@ -182,12 +244,17 @@ for (const file of files) {
 
 await sendReport(results)
 await updateReadmeTimestamp()
+await updateReadmeAvailability(results)
 
 const deadCount = results.filter(r => !r.alive).length
-console.log(`\n${results.length - deadCount}/${results.length} sources alive`)
+const aliveCount = results.length - deadCount
+console.log(`\n${aliveCount}/${results.length} sources alive`)
 
-// If anything's down, exit with a failure code. This makes the GitHub
-// Actions run itself show as failed (red X) as a second signal beyond
-// ntfy. Remove the next line if you'd rather the run always show green
-// and rely on ntfy alone.
-if (deadCount > 0) process.exit(1)
+// Only fail the Actions run (red X) when EVERY source is down. A single
+// flaky/dead source (e.g. sukebei) is expected from time to time and
+// already gets surfaced clearly via the ntfy report above — it
+// shouldn't turn the whole scheduled run red on its own. Total outage
+// (nothing responding at all) is the actual signal worth a failed run.
+// Remove the next line entirely if you'd rather the run always show
+// green and rely on ntfy alone.
+if (aliveCount === 0) process.exit(1)
