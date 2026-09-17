@@ -19,7 +19,8 @@
 // Features:
 //   - Same RSS parsing as Nyaa (identical format)
 //   - Configurable category and filter via options
-//   - Mirror domain support
+//   - Automatic mirror fallback (nyaa.si → nyaa.mom → nyaa.net)
+//   - Manual domain override still supported
 //   - Resolution filtering
 //   - Episode matching
 //   - Retry logic with timeout
@@ -49,6 +50,13 @@ const log = {
 const DEFAULT_DOMAIN   = 'https://sukebei.nyaa.si'
 const DEFAULT_CATEGORY = '1_1'  // Art - Anime (hentai anime)
 const DEFAULT_FILTER   = '0'    // No filter (0 = all, 1 = no remakes, 2 = trusted only)
+
+// Mirrors tried in order when the user leaves domain empty / at the default
+const MIRRORS = [
+  'https://sukebei.nyaa.si',
+  'https://sukebei.nyaa.mom',
+  'https://sukebei.nyaa.net',
+]
 
 // Fetch timeout in ms
 const TIMEOUT_MS = 15000
@@ -164,13 +172,53 @@ function cleanTitle (title) {
 }
 
 /**
+ * Resolve which domain to use.
+ * - If the user set a custom domain → use only that.
+ * - Otherwise try the mirror list until one responds.
+ * @param {typeof fetch} fetchFn
+ * @param {object} options
+ * @returns {Promise<string>}
+ */
+async function resolveDomain (fetchFn, options = {}) {
+  const userDomain = options.domain?.trim()
+
+  // User explicitly set a domain → respect it, no fallback
+  if (userDomain && userDomain !== DEFAULT_DOMAIN) {
+    return userDomain.replace(/\/+$/, '')
+  }
+
+  // Try mirrors in order
+  for (const domain of MIRRORS) {
+    try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 7000)
+      const res = await fetchFn(`${domain}/?page=rss`, {
+        signal: controller.signal,
+        headers: { Accept: 'application/rss+xml, application/xml, text/xml' }
+      })
+      clearTimeout(timer)
+      if (res.ok) {
+        log.info('Using domain', { domain })
+        return domain
+      }
+    } catch (err) {
+      log.warn(`Mirror failed: ${domain}`, { error: err.message })
+    }
+  }
+
+  throw new Error('All Sukebei mirrors are currently unreachable. You can set a domain manually in the extension settings.')
+}
+
+/**
  * Build a Sukebei RSS URL.
+ * Now async because of domain resolution.
+ * @param {typeof fetch} fetchFn
  * @param {string} query
  * @param {object} options
- * @returns {string}
+ * @returns {Promise<string>}
  */
-function buildURL (query, options = {}) {
-  const domain   = (options.domain?.trim()  || DEFAULT_DOMAIN).replace(/\/+$/, '')
+async function buildURL (fetchFn, query, options = {}) {
+  const domain   = await resolveDomain(fetchFn, options)
   const category = options.category?.trim() || DEFAULT_CATEGORY
   const filter   = options.filter?.trim()   || DEFAULT_FILTER
   const params   = new URLSearchParams({ page: 'rss', q: query, c: category, f: filter, s: 'seeders', o: 'desc' })
@@ -257,7 +305,7 @@ function parseRSS (xml, { resolution, isBatch, episode }) {
 async function fetchFirstResults (fetchFn, queries, parseOpts, options) {
   for (const query of queries) {
     try {
-      const url = buildURL(cleanTitle(query), options)
+      const url = await buildURL(fetchFn, cleanTitle(query), options)
       log.info('Trying query', { query, url })
       const res = await fetchWithRetry(fetchFn, url)
       const xml = await res.text()
@@ -290,15 +338,16 @@ export default {
   async test (query) {
     log.info('test() called')
     const fetchFn = query?.fetch ?? fetch
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
     try {
-      const res = await fetchFn(`${DEFAULT_DOMAIN}/?page=rss`, { signal: controller.signal })
+      // Use the same resolver so test() also tries mirrors
+      const domain = await resolveDomain(fetchFn, {})
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+      const res = await fetchFn(`${domain}/?page=rss`, { signal: controller.signal })
       clearTimeout(timer)
       if (!res.ok) throw new Error(`Sukebei returned HTTP ${res.status}. The site may be down.`)
       return true
     } catch (err) {
-      clearTimeout(timer)
       if (err.name === 'AbortError') throw new Error(`Sukebei did not respond within ${TIMEOUT_MS / 1000}s. Check your network.`)
       throw new Error(`Could not reach Sukebei: ${err.message}`)
     }
