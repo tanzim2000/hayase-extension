@@ -100,6 +100,15 @@ async function updateReadmeTimestamp () {
 	await writeFile(readmePath, updated, 'utf8')
 }
 
+// Manifest entries with a known functional problem beyond simple
+// reachability (see "Known Issues" in README.md). The automated check
+// below only tests whether test() resolves — it can't detect "resolves
+// fine but search results are broken" — so without this list, a source
+// like Tokyo Toshokan would show a plain "✅ Yes" right above a Known
+// Issues bullet saying it doesn't work. Keep this in sync with that
+// section by hand when you add or resolve an issue.
+const KNOWN_ISSUES = new Set(['Tokyo Toshokan'])
+
 /**
  * Rewrite the "Available" cell of every row in the README's Torrent
  * Sources table, based on this run's actual results — so the table
@@ -154,7 +163,17 @@ async function updateReadmeAvailability (results) {
 		if (!aliveByDisplayName.has(rawName)) return line
 
 		const alive = aliveByDisplayName.get(rawName)
-		cells[cells.length - 2] = ` ${alive ? '✅ Yes' : '❌ No'} `
+		let cell
+		if (!alive) {
+			cell = '❌ No'
+		} else if (KNOWN_ISSUES.has(rawName)) {
+			// Reachable, but flagged in Known Issues as not actually
+			// working — say so here instead of a bare, misleading "Yes".
+			cell = '⚠️ Yes\\*'
+		} else {
+			cell = '✅ Yes'
+		}
+		cells[cells.length - 2] = ` ${cell} `
 		return cells.join('|')
 	})
 
