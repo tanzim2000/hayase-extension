@@ -49,6 +49,14 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 > The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds* — it can't detect whether search results are actually good.
 > \* Reachable, but see [Known Issues](#known-issues) below — it doesn't actually work right now.
 
+#### Mirror Status
+
+Sources with more than one configured domain get checked individually — this shows which domain is actually serving each one right now, not just whether the source as a whole is up.
+
+<!-- MIRRORS -->
+> No sources currently report mirror status.
+<!-- /MIRRORS -->
+
 ### Extension Options
 
 Some extensions have configurable options, accessible from **Settings → Extensions → [Extension Name]**.
@@ -79,7 +87,8 @@ Some extensions have configurable options, accessible from **Settings → Extens
 #### Sukebei
 | Option | Description | Default |
 |---|---|---|
-| `domain` | Sukebei base URL. Change to a mirror if blocked. | `https://sukebei.nyaa.si` |
+| `domain` | Sukebei base URL. Tried first. Leave as-is unless the official site is blocked for you. | `https://sukebei.nyaa.si` |
+| `domains` | Optional fallback mirrors, comma-separated. Tried in order if `domain` doesn't respond. | *(empty)* |
 | `category` | Category: `1_1` = Hentai, `2_2` = Real Life Videos, `0_0` = All. | `1_1` |
 | `filter` | Quality filter. `0` = all, `1` = no remakes, `2` = trusted only. | `0` |
 
