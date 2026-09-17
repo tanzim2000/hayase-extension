@@ -46,12 +46,11 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
 | **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
 
-> The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds* — it can't detect whether search results are actually good.
-> \* Reachable, but see [Known Issues](#known-issues) below — it doesn't actually work right now.
+> The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds*. it can't detect whether search results are actually good.
 
 #### Mirror Status
 
-Sources with more than one configured domain get checked individually — this shows which domain is actually serving each one right now, not just whether the source as a whole is up.
+Sources with more than one configured domain get checked individually. This shows which domain is actually serving each one right now, not just whether the source as a whole is up.
 
 <!-- MIRRORS -->
 > No sources currently report mirror status.
