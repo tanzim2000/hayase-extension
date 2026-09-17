@@ -29,7 +29,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 ## Extensions
 
 <!-- LAST_CHECKED -->
-> 🕐 Sources last verified: September 17, 2026 at 05:27 UTC
+> 🕐 Sources last verified: September 17, 2026 at 06:20 UTC
 <!-- /LAST_CHECKED -->
 
 ### Torrent Sources
@@ -44,7 +44,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | **AnimeTosho** | ID-based search via AniDB. Mirrors Nyaa and Tokyo Toshokan with high accuracy. | Sub | 🇺🇸 🇯🇵 | ❌ No |
 | **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | ✅ Yes |
 | **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
-| **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
+| **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ❌ No |
 
 > The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds*. it can't detect whether search results are actually good.
 
@@ -53,7 +53,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 Sources with more than one configured domain get checked individually. This shows which domain is actually serving each one right now, not just whether the source as a whole is up.
 
 <!-- MIRRORS -->
-> No sources currently report mirror status.
+> **Sukebei** — no working domain. Tried 1: `sukebei.nyaa.si` (No response within 8s)
 <!-- /MIRRORS -->
 
 ### Extension Options
