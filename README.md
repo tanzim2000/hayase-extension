@@ -29,7 +29,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 ## Extensions
 
 <!-- LAST_CHECKED -->
-> 🕐 Sources last verified: September 23, 2026 at 02:24 UTC
+> 🕐 Sources last verified: September 28, 2026 at 12:22 UTC
 <!-- /LAST_CHECKED -->
 
 ### Torrent Sources
