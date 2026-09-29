@@ -6,15 +6,23 @@
 // Features:
 //   - Direct RSS feed parsing (no proxy dependency)
 //   - Resolution filtering
-//   - Episode number matching
+//   - Episode number filtering (only returns torrents for the episode you asked for)
+//   - Correct batch detection (a single "S03E11" release is NOT a batch)
 //   - Title fallback chain (tries multiple title variants)
 //   - Retry logic with exponential backoff
 //   - Exclusion keyword filtering
-//   - Batch detection
 //   - Configurable domain, category, filter, keyword via Hayase options
 //   - keyword option: appended to every query — use "Dubbed" for dub entries,
 //     "Arabic" / "Hindi" / "Bangla" etc. for non-English entries, "" for subs
 //   - Debug logging (set DEBUG_MODE = true to enable)
+//
+// CHANGELOG (this version):
+//   FIX 1: Episode number was only used to label results "high" or "medium"
+//          accuracy, never to remove wrong episodes. So asking for episode 1, 7
+//          or 9 always showed the same list. Now results that are not the
+//          requested episode are dropped.
+//   FIX 2: The batch check treated "S03E11" and "3rd Season" as batches, so every
+//          single episode showed a "Batch" tag. Now only real packs are tagged.
 
 // ─── Debug ────────────────────────────────────────────────────────────────────
 // Set to true to enable detailed logging in Hayase's DevTools console (Ctrl+Shift+I)
@@ -22,17 +30,17 @@
 const DEBUG_MODE = false
 
 const log = {
-  _fmt (level, msg, data) {
-    if (!DEBUG_MODE) return
-    const ts = new Date().toISOString()
-    const prefix = `[NyaaSi][${ts}][${level}]`
-    const fn = level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'log'
-    data !== undefined ? console[fn](prefix, msg, data) : console[fn](prefix, msg)
-  },
-  info:  (msg, data) => log._fmt('INFO',  msg, data),
-  warn:  (msg, data) => log._fmt('WARN',  msg, data),
-  error: (msg, data) => log._fmt('ERROR', msg, data),
-  debug: (msg, data) => log._fmt('DEBUG', msg, data),
+	_fmt (level, msg, data) {
+		if (!DEBUG_MODE) return
+		const ts = new Date().toISOString()
+		const prefix = `[NyaaSi][${ts}][${level}]`
+		const fn = level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'log'
+		data !== undefined ? console[fn](prefix, msg, data) : console[fn](prefix, msg)
+	},
+	info:  (msg, data) => log._fmt('INFO',  msg, data),
+	warn:  (msg, data) => log._fmt('WARN',  msg, data),
+	error: (msg, data) => log._fmt('ERROR', msg, data),
+	debug: (msg, data) => log._fmt('DEBUG', msg, data),
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -56,17 +64,17 @@ const MAX_RETRIES = 2
  * @returns {number}
  */
 function parseSize (sizeStr) {
-  if (!sizeStr) return 0
-  const match = sizeStr.match(/([\d.]+)\s*(KiB|MiB|GiB|TiB|KB|MB|GB|TB)/i)
-  if (!match) return 0
-  const value = parseFloat(match[1])
-  switch (match[2].toUpperCase()) {
-    case 'KIB': case 'KB': return Math.round(value * 1024)
-    case 'MIB': case 'MB': return Math.round(value * 1024 ** 2)
-    case 'GIB': case 'GB': return Math.round(value * 1024 ** 3)
-    case 'TIB': case 'TB': return Math.round(value * 1024 ** 4)
-    default: return 0
-  }
+	if (!sizeStr) return 0
+	const match = sizeStr.match(/([\d.]+)\s*(KiB|MiB|GiB|TiB|KB|MB|GB|TB)/i)
+	if (!match) return 0
+	const value = parseFloat(match[1])
+	switch (match[2].toUpperCase()) {
+		case 'KIB': case 'KB': return Math.round(value * 1024)
+		case 'MIB': case 'MB': return Math.round(value * 1024 ** 2)
+		case 'GIB': case 'GB': return Math.round(value * 1024 ** 3)
+		case 'TIB': case 'TB': return Math.round(value * 1024 ** 4)
+		default: return 0
+	}
 }
 
 /**
@@ -77,8 +85,8 @@ function parseSize (sizeStr) {
  * @returns {string}
  */
 function getNyaaTag (item, tag) {
-  const match = item.match(new RegExp(`<nyaa:${tag}>([^<]*)<\\/nyaa:${tag}>`))
-  return match ? match[1].trim() : ''
+	const match = item.match(new RegExp(`<nyaa:${tag}>([^<]*)<\\/nyaa:${tag}>`))
+	return match ? match[1].trim() : ''
 }
 
 /**
@@ -88,8 +96,8 @@ function getNyaaTag (item, tag) {
  * @returns {string}
  */
 function getTag (item, tag) {
-  const match = item.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${tag}>`))
-  return match ? match[1].trim() : ''
+	const match = item.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${tag}>`))
+	return match ? match[1].trim() : ''
 }
 
 /**
@@ -102,68 +110,119 @@ function getTag (item, tag) {
  * @returns {Promise<Response>}
  */
 async function fetchWithRetry (fetchFn, url, retries = MAX_RETRIES) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
-    log.info(`Fetch attempt ${attempt + 1}/${retries + 1}`, { url })
-    try {
-      const res = await fetchFn(url, {
-        signal: controller.signal,
-        headers: { Accept: 'application/rss+xml, application/xml, text/xml' }
-      })
-      clearTimeout(timer)
-      if (!res.ok) throw new Error(`Nyaa returned HTTP ${res.status}. The site may be down or blocked in your region.`)
-      log.info('Fetch OK', { status: res.status, url })
-      return res
-    } catch (err) {
-      clearTimeout(timer)
-      log.warn(`Fetch failed (attempt ${attempt + 1})`, { url, error: err.message })
-      if (attempt === retries) {
-        // Throw user-friendly error on final failure
-        if (err.name === 'AbortError') throw new Error(`Nyaa request timed out after ${TIMEOUT_MS / 1000}s. The site may be slow or blocked.`)
-        throw new Error(`Could not reach Nyaa: ${err.message}`)
-      }
-      // Exponential backoff: 500ms, 1000ms
-      const delay = 500 * (attempt + 1)
-      log.debug(`Retrying in ${delay}ms...`)
-      await new Promise(r => setTimeout(r, delay))
-    }
-  }
+	for (let attempt = 0; attempt <= retries; attempt++) {
+		const controller = new AbortController()
+		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+		log.info(`Fetch attempt ${attempt + 1}/${retries + 1}`, { url })
+		try {
+			const res = await fetchFn(url, {
+				signal: controller.signal,
+				headers: { Accept: 'application/rss+xml, application/xml, text/xml' }
+			})
+			clearTimeout(timer)
+			if (!res.ok) throw new Error(`Nyaa returned HTTP ${res.status}. The site may be down or blocked in your region.`)
+			log.info('Fetch OK', { status: res.status, url })
+			return res
+		} catch (err) {
+			clearTimeout(timer)
+			log.warn(`Fetch failed (attempt ${attempt + 1})`, { url, error: err.message })
+			if (attempt === retries) {
+				// Throw user-friendly error on final failure
+				if (err.name === 'AbortError') throw new Error(`Nyaa request timed out after ${TIMEOUT_MS / 1000}s. The site may be slow or blocked.`)
+				throw new Error(`Could not reach Nyaa: ${err.message}`)
+			}
+			// Exponential backoff: 500ms, 1000ms
+			const delay = 500 * (attempt + 1)
+			log.debug(`Retrying in ${delay}ms...`)
+			await new Promise(r => setTimeout(r, delay))
+		}
+	}
 }
 
 /**
- * Detect if a torrent title likely contains a given episode number.
- * Handles common patterns: "- 01", "E01", "[01]", "[001]" etc.
+ * Does this torrent title say it is exactly the given episode?
+ *
+ * Real Nyaa titles write the episode in many ways, so we check all of these:
+ *   "S03E07"        (season + episode — the most common style these days)
+ *   "E07" / "EP07"  (episode only)
+ *   "Episode 7"
+ *   "- 07"          (classic fansub style: "Show Name - 07 [1080p]")
+ *   "[07]"
+ *   "第7话"          (Chinese style)
+ *
+ * The (?!\d) at the end of each pattern means "not followed by another digit",
+ * so asking for episode 1 will NOT match episode 11 or EP1180.
  * @param {string} title
  * @param {number} episode
  * @returns {boolean}
  */
 function titleMatchesEpisode (title, episode) {
-  const ep = episode.toString()
-  const epPadded  = ep.padStart(2, '0')
-  const epPadded3 = ep.padStart(3, '0')
-  const patterns = [
-    `[-–\\s]\\s*${epPadded3}[\\s\\[\\]vV._(]`,
-    `[-–\\s]\\s*${epPadded}[\\s\\[\\]vV._(]`,
-    `[Ee]${epPadded}[^\\d]`,
-    `\\[${epPadded}\\]`,
-    `\\[${epPadded3}\\]`,
-  ]
-  return patterns.some(p => new RegExp(p).test(title))
+	// Strip leading zeros: "07" and 7 both become "7", then we allow any zeros back in
+	const n = String(Number(episode))
+	const patterns = [
+		`S\\d{1,2}E0*${n}(?!\\d)`,                        // S03E07
+		`(?<![A-Za-z])[Ee][Pp]?\\s?0*${n}(?!\\d)`,        // E07, EP07, Ep 7
+		`Episode\\s*0*${n}(?!\\d)`,                        // Episode 7
+		`[-–]\\s*0*${n}(?:v\\d+)?(?!\\d)(?!\\s?[pP]\\b)`, // - 07, - 07v2 (but not "- 1080p")
+		`\\[0*${n}(?:v\\d+)?\\]`,                          // [07]
+		`第0*${n}[话話集]`,                // 第7话
+	]
+	return patterns.some(p => new RegExp(p, 'i').test(title))
+}
+
+/**
+ * Does this torrent title look like a multi-episode pack (a "batch")?
+ *
+ * IMPORTANT: this used to also match "S03E11" and the word "season", which is
+ * why every single episode was showing a Batch tag. We now decide in this order:
+ *   1. An episode range like "01-12" or "01~12"      → batch
+ *   2. The word "batch" or "complete"                → batch
+ *   3. Names one episode ("S03E11", "- 09", "[09]",
+ *      "E09", "第9话")                                → NOT a batch
+ *   4. A bare season tag ("S03", "S3") or "Vol.1"    → batch
+ *   5. Anything else                                 → NOT a batch
+ * Step 3 comes before step 4 so "[SubsPlease] Show S3 - 09" counts as one episode.
+ * @param {string} title
+ * @returns {boolean}
+ */
+function looksLikeBatch (title) {
+	// Remove resolutions ("1080p") and codec-style numbers ("x265", "AAC2.0") first,
+	// so they are not mistaken for episode numbers or ranges
+	const t = title.replace(/\b\d{3,4}p\b/gi, ' ').replace(/\b[xh]\.?26[45]\b/gi, ' ')
+
+	// 1. Episode range: "01-12", "01 ~ 12", "S03E01-E12"
+	if (/\b\d{1,3}\s*[-~]\s*E?\d{1,3}\b/i.test(t) && !/\b\d{1,3}-nin\b/i.test(t)) return true
+
+	// 2. Explicit words
+	if (/\b(batch|complete)\b/i.test(t)) return true
+
+	// 3. A single-episode marker means this is one episode
+	const singleEpisode = [
+		/S\d{1,2}E\d{1,4}/i,                           // S03E11
+		/(?<![A-Za-z])EP?\s?\d{1,4}\b/i,               // E11, EP11, Ep 11
+		/\s[-–]\s\d{1,4}(?:v\d+)?(?=[\s[(.]|$)/,  // " - 09", " - 01v2"
+		/\[\d{1,4}(?:v\d+)?\]/,                         // [09]
+		/第\d+[话話集]/,               // 第9话
+	]
+	if (singleEpisode.some(p => p.test(t))) return false
+
+	// 4. Bare season tag or volume
+	return /\bS\d{1,2}\b|\bvol\.?\s*\d/i.test(t)
 }
 
 /**
  * Clean a title for use as a Nyaa search query.
  * Preserves Japanese/Unicode characters — Nyaa indexes them.
- * Only strips characters that break URL encoding.
+ * Strips characters that break URL encoding, plus commas
+ * (release titles on Nyaa are written without them, e.g. "Really Really Really").
  * @param {string} title
  * @returns {string}
  */
 function cleanTitle (title) {
-  return title
-    .replace(/[<>"]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+	return title
+		.replace(/[<>",]/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim()
 }
 
 /**
@@ -175,8 +234,8 @@ function cleanTitle (title) {
  * @returns {string}
  */
 function applyKeyword (query, keyword) {
-  const kw = keyword?.trim()
-  return kw ? `${query} ${kw}` : query
+	const kw = keyword?.trim()
+	return kw ? `${query} ${kw}` : query
 }
 
 /**
@@ -186,11 +245,11 @@ function applyKeyword (query, keyword) {
  * @returns {string}
  */
 function buildURL (query, options = {}) {
-  const domain   = (options.domain?.trim()   || DEFAULT_DOMAIN).replace(/\/+$/, '')
-  const category = options.category?.trim()  || DEFAULT_CATEGORY
-  const filter   = options.filter?.trim()    || DEFAULT_FILTER
-  const params   = new URLSearchParams({ page: 'rss', q: query, c: category, f: filter, s: 'seeders', o: 'desc' })
-  return `${domain}/?${params.toString()}`
+	const domain   = (options.domain?.trim()   || DEFAULT_DOMAIN).replace(/\/+$/, '')
+	const category = options.category?.trim()  || DEFAULT_CATEGORY
+	const filter   = options.filter?.trim()    || DEFAULT_FILTER
+	const params   = new URLSearchParams({ page: 'rss', q: query, c: category, f: filter, s: 'seeders', o: 'desc' })
+	return `${domain}/?${params.toString()}`
 }
 
 /**
@@ -200,134 +259,164 @@ function buildURL (query, options = {}) {
  * @returns {object[]}
  */
 function parseRSS (xml, { resolution, isBatch, episode }) {
-  if (!xml.includes('<rss')) throw new Error('Nyaa returned a non-RSS response. The site may have changed or be blocking requests.')
+	if (!xml.includes('<rss')) throw new Error('Nyaa returned a non-RSS response. The site may have changed or be blocking requests.')
 
-  const results = []
-  const itemRegex = /<item>([\s\S]*?)<\/item>/g
-  let match
-  let skippedCategory = 0
-  let skippedResolution = 0
-  let skippedNoHash = 0
+	const results = []
+	const itemRegex = /<item>([\s\S]*?)<\/item>/g
+	let match
+	let skippedCategory = 0
+	let skippedResolution = 0
+	let skippedNoHash = 0
 
-  while ((match = itemRegex.exec(xml)) !== null) {
-    const item = match[1]
+	while ((match = itemRegex.exec(xml)) !== null) {
+		const item = match[1]
 
-    const title = getTag(item, 'title')
-    if (!title) continue
+		const title = getTag(item, 'title')
+		if (!title) continue
 
-    // Only keep anime categories (1_2 English, 1_3 Non-English, 1_4 Raw)
-    const categoryId = getNyaaTag(item, 'categoryId')
-    if (categoryId && !categoryId.startsWith('1_')) {
-      skippedCategory++
-      log.debug(`Skipped (category ${categoryId})`, { title })
-      continue
-    }
+		// Only keep anime categories (1_2 English, 1_3 Non-English, 1_4 Raw)
+		const categoryId = getNyaaTag(item, 'categoryId')
+		if (categoryId && !categoryId.startsWith('1_')) {
+			skippedCategory++
+			log.debug(`Skipped (category ${categoryId})`, { title })
+			continue
+		}
 
-    // Resolution filtering — skip if user wants a specific res and title doesn't have it
-    if (resolution && !title.toLowerCase().includes(resolution)) {
-      skippedResolution++
-      log.debug(`Skipped (resolution mismatch, want ${resolution})`, { title })
-      continue
-    }
+		// Resolution filtering — skip if user wants a specific res and title doesn't have it
+		if (resolution && !title.toLowerCase().includes(resolution)) {
+			skippedResolution++
+			log.debug(`Skipped (resolution mismatch, want ${resolution})`, { title })
+			continue
+		}
 
-    const infoHash = getNyaaTag(item, 'infoHash').toLowerCase()
-    if (!infoHash) {
-      skippedNoHash++
-      log.warn('Skipped (no infoHash)', { title })
-      continue
-    }
+		const infoHash = getNyaaTag(item, 'infoHash').toLowerCase()
+		if (!infoHash) {
+			skippedNoHash++
+			log.warn('Skipped (no infoHash)', { title })
+			continue
+		}
 
-    // Episode match check — affects accuracy rating, doesn't hard-exclude results
-    const hasEpMatch = episode != null ? titleMatchesEpisode(title, episode) : true
-    const accuracy = hasEpMatch ? 'high' : 'medium'
+		// Build magnet link with standard Nyaa trackers
+		const magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(title)}` +
+			`&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce` +
+			`&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce` +
+			`&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce` +
+			`&tr=udp%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce` +
+			`&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce`
 
-    // Build magnet link with standard Nyaa trackers
-    const magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(title)}` +
-      `&tr=http%3A%2F%2Fnyaa.tracker.wf%3A7777%2Fannounce` +
-      `&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce` +
-      `&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce` +
-      `&tr=udp%3A%2F%2Fexodus.desync.com%3A6969%2Fannounce` +
-      `&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce`
+		const seeders   = parseInt(getNyaaTag(item, 'seeders')  || '0', 10)
+		const leechers  = parseInt(getNyaaTag(item, 'leechers') || '0', 10)
+		const downloads = parseInt(getNyaaTag(item, 'downloads')|| '0', 10)
+		const size      = parseSize(getNyaaTag(item, 'size'))
 
-    const seeders   = parseInt(getNyaaTag(item, 'seeders')  || '0', 10)
-    const leechers  = parseInt(getNyaaTag(item, 'leechers') || '0', 10)
-    const downloads = parseInt(getNyaaTag(item, 'downloads')|| '0', 10)
-    const size      = parseSize(getNyaaTag(item, 'size'))
+		// Parse RFC 2822 date from pubDate
+		const pubDateStr = getTag(item, 'pubDate')
+		const date = pubDateStr ? new Date(pubDateStr) : new Date(0)
 
-    // Parse RFC 2822 date from pubDate
-    const pubDateStr = getTag(item, 'pubDate')
-    const date = pubDateStr ? new Date(pubDateStr) : new Date(0)
+		// Tag real packs as "batch". Single-episode searches never tag anything,
+		// because filterByEpisode() below has already removed the packs.
+		const type = looksLikeBatch(title) ? 'batch' : undefined
 
-    // Detect batch releases
-    let type
-    if (isBatch || /batch|season|complete|s\d{2}(?!\d)|vol\.?\s*\d/i.test(title)) {
-      type = 'batch'
-    }
+		// Episode accuracy: when a specific episode was asked for, everything that
+		// reaches this point matched it, so it is a "high" accuracy result.
+		// (For batch/movie searches there is no episode to check.)
+		const accuracy = 'high'
 
-    log.debug('Parsed result', { title, accuracy, type, seeders, leechers, size })
+		log.debug('Parsed result', { title, accuracy, type, seeders, leechers, size })
 
-    results.push({
-      title,
-      link:     magnet,
-      hash:     infoHash,
-      seeders:  seeders  >= 30000 ? 0 : seeders,   // Nyaa uses 99999 as "unknown"
-      leechers: leechers >= 30000 ? 0 : leechers,
-      downloads,
-      size,
-      date,
-      accuracy,
-      type,
-    })
-  }
+		results.push({
+			title,
+			link:     magnet,
+			hash:     infoHash,
+			seeders:  seeders  >= 30000 ? 0 : seeders,   // Nyaa uses 99999 as "unknown"
+			leechers: leechers >= 30000 ? 0 : leechers,
+			downloads,
+			size,
+			date,
+			accuracy,
+			type,
+		})
+	}
 
-  log.info('parseRSS complete', { total: results.length, skippedCategory, skippedResolution, skippedNoHash })
-  return results
+	log.info('parseRSS complete', { total: results.length, skippedCategory, skippedResolution, skippedNoHash })
+	return results
 }
 
 /**
- * Try a list of queries in order, return results from the first one that hits.
+ * Keep only results for the requested episode.
+ * This is the fix for "every episode shows the same torrents".
+ * @param {object[]} results
+ * @param {number} episode
+ * @returns {object[]}
+ */
+function filterByEpisode (results, episode) {
+	const kept = results.filter(r => r.type !== 'batch' && titleMatchesEpisode(r.title, episode))
+	log.debug('filterByEpisode', { episode, before: results.length, after: kept.length })
+	return kept
+}
+
+/**
+ * Keep only results that are real packs (used by batch search).
+ * @param {object[]} results
+ * @returns {object[]}
+ */
+function filterByBatch (results) {
+	const kept = results.filter(r => r.type === 'batch')
+	log.debug('filterByBatch', { before: results.length, after: kept.length })
+	return kept
+}
+
+/**
+ * Try a list of queries in order, return results from the first one that still
+ * has something left AFTER the filter runs.
+ *
+ * (Before, we returned as soon as Nyaa sent back *anything*. That is why a
+ * query that matched the wrong episodes stopped the search early.)
+ *
  * Tries each query across multiple categories before moving to the next query.
  * @param {typeof fetch} fetchFn
  * @param {string[]} queries
  * @param {object} parseOpts
  * @param {object} options  — Hayase extension options
+ * @param {(results: object[]) => object[]} [keep]  — filter applied to each page of results
  * @returns {Promise<object[]>}
  */
-async function fetchFirstResults (fetchFn, queries, parseOpts, options) {
-  log.info('fetchFirstResults start', { queries, parseOpts })
+async function fetchFirstResults (fetchFn, queries, parseOpts, options, keep = r => r) {
+	log.info('fetchFirstResults start', { queries, parseOpts })
 
-  // Try the configured category first, then non-English as fallback.
-  // For keyword-based entries (dub, non-English), the fallback is skipped
-  // since mixing categories would pollute results with unrelated content.
-  const keyword = options.keyword?.trim() || DEFAULT_KEYWORD
-  const primaryCategory = options.category || DEFAULT_CATEGORY
-  const categories = keyword
-    ? [primaryCategory]                  // keyword entries: stick to one category
-    : [primaryCategory, '1_3']           // sub entry: fall back to non-English
+	// Try the configured category first, then non-English as fallback.
+	// For keyword-based entries (dub, non-English), the fallback is skipped
+	// since mixing categories would pollute results with unrelated content.
+	const keyword = options.keyword?.trim() || DEFAULT_KEYWORD
+	const primaryCategory = options.category || DEFAULT_CATEGORY
+	const categories = keyword
+		? [primaryCategory]                  // keyword entries: stick to one category
+		: [primaryCategory, '1_3']           // sub entry: fall back to non-English
 
-  for (const query of queries) {
-    for (const cat of categories) {
-      try {
-        const optWithCat = { ...options, category: cat }
-        const url = buildURL(cleanTitle(query), optWithCat)
-        log.info('Trying query', { query, category: cat, url })
-        const res = await fetchWithRetry(fetchFn, url)
-        const xml = await res.text()
-        const results = parseRSS(xml, parseOpts)
-        if (results.length > 0) {
-          log.info('Query succeeded', { query, category: cat, resultCount: results.length })
-          return results
-        }
-        log.info('Query returned 0 results, trying next', { query, category: cat })
-      } catch (err) {
-        log.error('Query threw error', { query, error: err.message })
-        throw err // Re-throw so Hayase can show the user-friendly message
-      }
-    }
-  }
+	for (const query of queries) {
+		for (const cat of categories) {
+			try {
+				const optWithCat = { ...options, category: cat }
+				const url = buildURL(cleanTitle(query), optWithCat)
+				log.info('Trying query', { query, category: cat, url })
+				const res = await fetchWithRetry(fetchFn, url)
+				const xml = await res.text()
+				const parsed = parseRSS(xml, parseOpts)
+				const results = keep(parsed)
+				if (results.length > 0) {
+					log.info('Query succeeded', { query, category: cat, resultCount: results.length })
+					return results
+				}
+				log.info('Query had no usable results, trying next', { query, category: cat, rawCount: parsed.length })
+			} catch (err) {
+				log.error('Query threw error', { query, error: err.message })
+				throw err // Re-throw so Hayase can show the user-friendly message
+			}
+		}
+	}
 
-  log.warn('All queries exhausted, returning empty')
-  return []
+	log.warn('All queries exhausted, returning empty')
+	return []
 }
 
 /**
@@ -337,11 +426,11 @@ async function fetchFirstResults (fetchFn, queries, parseOpts, options) {
  * @returns {object[]}
  */
 function applyExclusions (results, exclusions) {
-  if (!exclusions?.length) return results
-  const lower = exclusions.map(e => e.toLowerCase())
-  const filtered = results.filter(r => !lower.some(ex => r.title.toLowerCase().includes(ex)))
-  log.debug('applyExclusions', { before: results.length, after: filtered.length, exclusions })
-  return filtered
+	if (!exclusions?.length) return results
+	const lower = exclusions.map(e => e.toLowerCase())
+	const filtered = results.filter(r => !lower.some(ex => r.title.toLowerCase().includes(ex)))
+	log.debug('applyExclusions', { before: results.length, after: filtered.length, exclusions })
+	return filtered
 }
 
 // ─── Extension Export ─────────────────────────────────────────────────────────
@@ -356,124 +445,130 @@ function applyExclusions (results, exclusions) {
 
 export default {
 
-  /**
-   * Health check — Hayase calls this to verify the extension is working.
-   * Must return true if OK, or throw a descriptive error if not.
-   */
-  async test (query) {
-    log.info('test() called')
-    const fetchFn = query?.fetch ?? fetch
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
-    try {
-      const res = await fetchFn(`${DEFAULT_DOMAIN}/?page=rss`, { signal: controller.signal })
-      if (!res.ok) throw new Error(`Nyaa returned HTTP ${res.status}. The site may be down or blocked in your region.`)
-      log.info('test() passed')
-      return true
-    } catch (err) {
-      if (err.name === 'AbortError') throw new Error(`Nyaa did not respond within ${TIMEOUT_MS / 1000}s. Check your network or whether nyaa.si is blocked.`)
-      throw new Error(`Could not reach Nyaa: ${err.message}`)
-    } finally {
-      clearTimeout(timer)
-    }
-  },
+	/**
+	 * Health check — Hayase calls this to verify the extension is working.
+	 * Must return true if OK, or throw a descriptive error if not.
+	 */
+	async test (query) {
+		log.info('test() called')
+		const fetchFn = query?.fetch ?? fetch
+		const controller = new AbortController()
+		const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+		try {
+			const res = await fetchFn(`${DEFAULT_DOMAIN}/?page=rss`, { signal: controller.signal })
+			if (!res.ok) throw new Error(`Nyaa returned HTTP ${res.status}. The site may be down or blocked in your region.`)
+			log.info('test() passed')
+			return true
+		} catch (err) {
+			if (err.name === 'AbortError') throw new Error(`Nyaa did not respond within ${TIMEOUT_MS / 1000}s. Check your network or whether nyaa.si is blocked.`)
+			throw new Error(`Could not reach Nyaa: ${err.message}`)
+		} finally {
+			clearTimeout(timer)
+		}
+	},
 
-  /**
-   * Single episode search.
-   * Builds multiple query variants and tries them in order.
-   * If a keyword is configured, it's appended to every variant.
-   */
-  async single (query, options = {}) {
-    log.info('single() called', { titles: query.titles, episode: query.episode, resolution: query.resolution })
-    if (!query.titles?.length) return []
+	/**
+	 * Single episode search.
+	 * Builds multiple query variants and tries them in order.
+	 * Only torrents that match the requested episode are returned.
+	 * If a keyword is configured, it's appended to every variant.
+	 */
+	async single (query, options = {}) {
+		log.info('single() called', { titles: query.titles, episode: query.episode, resolution: query.resolution })
+		if (!query.titles?.length) return []
 
-    const keyword  = options.keyword?.trim() || DEFAULT_KEYWORD
-    const ep       = query.episode != null ? query.episode.toString() : null
-    const epPadded = ep ? ep.padStart(2, '0') : null
+		const keyword  = options.keyword?.trim() || DEFAULT_KEYWORD
+		const ep       = query.episode != null ? query.episode.toString() : null
+		const epPadded = ep ? ep.padStart(2, '0') : null
 
-    // Build query variants from most specific to least specific,
-    // then apply the keyword suffix to each one
-    const queries = []
-    for (const title of query.titles.slice(0, 3)) {
-      if (epPadded) {
-        queries.push(applyKeyword(`${title} - ${epPadded}`, keyword))  // e.g. "Frieren - 01 Dubbed"
-        queries.push(applyKeyword(`${title} ${epPadded}`, keyword))    // e.g. "Frieren 01 Dubbed"
-      }
-      queries.push(applyKeyword(title, keyword))                       // fallback: title only
-    }
-    log.debug('Query variants', queries)
+		// Build query variants from most specific to least specific,
+		// then apply the keyword suffix to each one.
+		// Nyaa searches by whole words, so "Show 07" will NOT find "Show S03E07".
+		// That is fine: the title-only query at the end finds those, and
+		// filterByEpisode() picks out the right episode from its results.
+		const queries = []
+		for (const title of query.titles.slice(0, 3)) {
+			if (epPadded) {
+				queries.push(applyKeyword(`${title} - ${epPadded}`, keyword))  // e.g. "Frieren - 01 Dubbed"
+				queries.push(applyKeyword(`${title} ${epPadded}`, keyword))    // e.g. "Frieren 01 Dubbed"
+			}
+			queries.push(applyKeyword(title, keyword))                       // fallback: title only
+		}
+		log.debug('Query variants', queries)
 
-    const results = await fetchFirstResults(
-      query.fetch,
-      queries,
-      { resolution: query.resolution || '', isBatch: false, episode: query.episode },
-      options
-    )
+		// If Hayase gave us an episode, drop every torrent that is not that episode.
+		// If it did not (rare), keep everything like before.
+		const keep = query.episode != null
+			? results => filterByEpisode(results, query.episode)
+			: results => results.filter(r => r.type !== 'batch')
 
-    const filtered = applyExclusions(results, query.exclusions)
-    log.info('single() done', { rawCount: results.length, filteredCount: filtered.length })
-    return filtered
-  },
+		const results = await fetchFirstResults(
+			query.fetch,
+			queries,
+			{ resolution: query.resolution || '', isBatch: false, episode: query.episode },
+			options,
+			keep
+		)
 
-  /**
-   * Batch search — looks for complete season packs.
-   * Appends batch/complete/season keywords to help find packs,
-   * then the keyword suffix (e.g. "Dubbed") on top of that.
-   */
-  async batch (query, options = {}) {
-    log.info('batch() called', { titles: query.titles, episodeCount: query.episodeCount })
-    if (!query.titles?.length) return []
+		const filtered = applyExclusions(results, query.exclusions)
+		log.info('single() done', { rawCount: results.length, filteredCount: filtered.length })
+		return filtered
+	},
 
-    const keyword   = options.keyword?.trim() || DEFAULT_KEYWORD
-    const baseTitle = query.titles[0]
+	/**
+	 * Batch search — looks for complete season packs.
+	 * Appends batch/complete/season keywords to help find packs,
+	 * then the keyword suffix (e.g. "Dubbed") on top of that.
+	 * Only real packs are returned (never single episodes).
+	 */
+	async batch (query, options = {}) {
+		log.info('batch() called', { titles: query.titles, episodeCount: query.episodeCount })
+		if (!query.titles?.length) return []
 
-    // Try batch-specific queries first, then fall back to plain title.
-    // Keyword is appended after batch qualifiers so Nyaa can still match both.
-    const queries = [
-      applyKeyword(`${baseTitle} batch`, keyword),
-      applyKeyword(`${baseTitle} complete`, keyword),
-      applyKeyword(`${baseTitle} season`, keyword),
-      ...query.titles.slice(0, 3).map(t => applyKeyword(t, keyword)),
-    ]
+		const keyword   = options.keyword?.trim() || DEFAULT_KEYWORD
+		const baseTitle = query.titles[0]
 
-    const results = await fetchFirstResults(
-      query.fetch,
-      queries,
-      { resolution: query.resolution || '', isBatch: true },
-      options
-    )
+		// Try batch-specific queries first, then fall back to plain title.
+		// Keyword is appended after batch qualifiers so Nyaa can still match both.
+		const queries = [
+			applyKeyword(`${baseTitle} batch`, keyword),
+			applyKeyword(`${baseTitle} complete`, keyword),
+			applyKeyword(`${baseTitle} season`, keyword),
+			...query.titles.slice(0, 3).map(t => applyKeyword(t, keyword)),
+		]
 
-    // Prefer results that look like packs (episode range in title or type=batch)
-    const packs = results.filter(r =>
-      r.type === 'batch' ||
-      (query.episodeCount && r.title.match(/\d+\s*[-~]\s*\d+/))
-    )
-    log.info('batch() pack filter', { before: results.length, after: packs.length })
+		const packs = await fetchFirstResults(
+			query.fetch,
+			queries,
+			{ resolution: query.resolution || '', isBatch: true },
+			options,
+			filterByBatch
+		)
 
-    const final = applyExclusions(packs.length ? packs : results, query.exclusions)
-    log.info('batch() done', { finalCount: final.length })
-    return final
-  },
+		const final = applyExclusions(packs, query.exclusions)
+		log.info('batch() done', { finalCount: final.length })
+		return final
+	},
 
-  /**
-   * Movie search — same as single but without episode number logic.
-   */
-  async movie (query, options = {}) {
-    log.info('movie() called', { titles: query.titles, resolution: query.resolution })
-    if (!query.titles?.length) return []
+	/**
+	 * Movie search — same as single but without episode number logic.
+	 */
+	async movie (query, options = {}) {
+		log.info('movie() called', { titles: query.titles, resolution: query.resolution })
+		if (!query.titles?.length) return []
 
-    const keyword = options.keyword?.trim() || DEFAULT_KEYWORD
-    const queries = query.titles.slice(0, 3).map(t => applyKeyword(t, keyword))
+		const keyword = options.keyword?.trim() || DEFAULT_KEYWORD
+		const queries = query.titles.slice(0, 3).map(t => applyKeyword(t, keyword))
 
-    const results = await fetchFirstResults(
-      query.fetch,
-      queries,
-      { resolution: query.resolution || '', isBatch: false },
-      options
-    )
+		const results = await fetchFirstResults(
+			query.fetch,
+			queries,
+			{ resolution: query.resolution || '', isBatch: false },
+			options
+		)
 
-    const filtered = applyExclusions(results, query.exclusions)
-    log.info('movie() done', { rawCount: results.length, filteredCount: filtered.length })
-    return filtered
-  },
+		const filtered = applyExclusions(results, query.exclusions)
+		log.info('movie() done', { rawCount: results.length, filteredCount: filtered.length })
+		return filtered
+	},
 }
