@@ -50,14 +50,6 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 
 > The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds*. it can't detect whether search results are actually good.
 
-#### Mirror Status
-
-Sources with more than one configured domain get checked individually. This shows which domain is actually serving each one right now, not just whether the source as a whole is up.
-
-<!-- MIRRORS -->
-> **Sukebei** — no working domain. Tried 1: `sukebei.nyaa.si` (No response within 8s)
-<!-- /MIRRORS -->
-
 ### Extension Options
 
 Some extensions have configurable options, accessible from **Settings → Extensions → [Extension Name]**.

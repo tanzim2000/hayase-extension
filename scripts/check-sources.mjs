@@ -8,25 +8,9 @@
 // Usage: node scripts/check-sources.mjs
 //
 // At the end, sends one full report to ntfy — so you find out even if
-// you're not watching the GitHub Actions tab — and rewrites three blocks
+// you're not watching the GitHub Actions tab — and rewrites two blocks
 // of README.md from this run's actual results: the "Sources last verified"
-// timestamp, the Available column of the Torrent Sources table, and the
-// mirror status block.
-//
-// ─── THE mirrors() HOOK ──────────────────────────────────────────────────
-//
-// Some sources can be reached through more than one domain. Those files
-// export an EXTRA function beyond Hayase's contract:
-//
-//   mirrors(query, options) -> { active: string|null, checked: [...] }
-//
-// It is optional. Hayase never calls it and never will — it exists only
-// for this script. Any extension that doesn't export it is checked exactly
-// as before, so adding the hook to one file changes nothing for the rest.
-// Unlike test(), it does not throw: "every mirror is dead" is a result
-// worth printing, not an error to swallow.
-//
-// ─────────────────────────────────────────────────────────────────────────
+// timestamp and the Available column of the Torrent Sources table.
 
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 
@@ -142,11 +126,10 @@ function manifestMismatch (fetchedHosts, entries) {
 }
 
 /**
- * Test one extension file by loading it and calling its test() function,
- * plus its mirrors() function if it has one.
+ * Test one extension file by loading it and calling its test() function.
  * @param {string} filename — e.g. "nyaasi.js"
  * @param {object[]} [entries] — manifest entries backed by this file
- * @returns {Promise<{ name: string, displayName: string, alive: boolean, message: string, ms: number|null, mirrors: object|null }>}
+ * @returns {Promise<{ name: string, displayName: string, alive: boolean, message: string, ms: number|null }>}
  */
 async function checkExtension (filename, entries = []) {
 	const name = filename.replace(/\.js$/, '')
@@ -161,12 +144,12 @@ async function checkExtension (filename, entries = []) {
 	try {
 		extension = (await import(fileUrl.href)).default
 	} catch (err) {
-		return { name, displayName, alive: false, message: `Failed to load file: ${err.message}`, ms: null, mirrors: null }
+		return { name, displayName, alive: false, message: `Failed to load file: ${err.message}`, ms: null }
 	}
 
 	// Step 2 — make sure it actually has a test() function to call
 	if (typeof extension?.test !== 'function') {
-		return { name, displayName, alive: false, message: 'No test() function exported — cannot verify', ms: null, mirrors: null }
+		return { name, displayName, alive: false, message: 'No test() function exported — cannot verify', ms: null }
 	}
 
 	// Step 3 — call test(), timing how long it takes. Each extension's
@@ -177,9 +160,9 @@ async function checkExtension (filename, entries = []) {
 	let result
 	try {
 		await extension.test({ fetch: tracker.fetch }, options)
-		result = { name, displayName, alive: true, message: 'OK', ms: Date.now() - start, mirrors: null }
+		result = { name, displayName, alive: true, message: 'OK', ms: Date.now() - start }
 	} catch (err) {
-		result = { name, displayName, alive: false, message: err.message || 'Unknown error', ms: Date.now() - start, mirrors: null }
+		result = { name, displayName, alive: false, message: err.message || 'Unknown error', ms: Date.now() - start }
 	}
 
 	// Step 3b — the site answered, but would Hayase actually let the
@@ -189,32 +172,7 @@ async function checkExtension (filename, entries = []) {
 		if (mismatch) result = { ...result, alive: false, message: mismatch }
 	}
 
-	// Step 4 — if this extension reports mirrors, collect that too. Wrapped
-	// in its own try/catch so a bug in an optional reporting hook can never
-	// turn a healthy source into a failed one.
-	if (typeof extension.mirrors === 'function') {
-		try {
-			result.mirrors = await extension.mirrors({ fetch }, options)
-		} catch (err) {
-			console.warn(`  (${name}: mirrors() hook threw — ${err.message})`)
-		}
-	}
-
 	return result
-}
-
-/**
- * Turn a base URL into just its hostname, for display.
- * "https://sukebei.nyaa.si/" -> "sukebei.nyaa.si"
- * @param {string} url
- * @returns {string}
- */
-function hostOf (url) {
-	try {
-		return new URL(url).host
-	} catch {
-		return url
-	}
 }
 
 /**
@@ -260,49 +218,6 @@ function buildTimestampBlock () {
 		timeZone: 'UTC',
 	})
 	return `> 🕐 Sources last verified: ${datePart} at ${timePart} UTC`
-}
-
-/**
- * Build the mirror status block — one line per source that reports mirrors.
- *
- * Only shows domains that were actually configured and probed. Sources with
- * no mirrors() hook are simply absent, which is why this reads as a short
- * note rather than a table: today it's one source, and a one-row table
- * looks broken.
- *
- * @param {object[]} results
- * @returns {string}
- */
-function buildMirrorBlock (results) {
-	const reporting = results.filter(r => r.mirrors)
-	if (reporting.length === 0) {
-		return '> No sources currently report mirror status.'
-	}
-
-	const lines = reporting.map(r => {
-		const { active, checked } = r.mirrors
-		const total = checked.length
-
-		if (!active) {
-			return `> **${r.displayName}** — no working domain. Tried ${total}: ` +
-				checked.map(c => `\`${hostOf(c.domain)}\` (${c.error})`).join(', ')
-		}
-
-		const up = checked.filter(c => c.ok)
-		const down = checked.filter(c => !c.ok)
-
-		let line = `> **${r.displayName}** — currently served by \`${hostOf(active)}\``
-		if (total > 1) {
-			line += ` (${up.length} of ${total} domains responding`
-			if (down.length > 0) {
-				line += `; down: ${down.map(c => `\`${hostOf(c.domain)}\``).join(', ')}`
-			}
-			line += ')'
-		}
-		return line
-	})
-
-	return lines.join('\n>\n')
 }
 
 // Manifest entries with a known functional problem beyond simple
@@ -381,7 +296,7 @@ function applyAvailability (readme, results, manifestByFile) {
 /**
  * Read README.md once, apply every update, write it back once.
  *
- * Doing all three edits in a single read/write is deliberate: the previous
+ * Doing both edits in a single read/write is deliberate: the previous
  * version read and wrote the file separately per section, so a crash
  * partway through could leave the README half-updated and internally
  * inconsistent.
@@ -394,7 +309,6 @@ async function updateReadme (results, manifestByFile) {
 	let readme = await readFile(readmePath, 'utf8')
 
 	readme = replaceBlock(readme, 'LAST_CHECKED', buildTimestampBlock())
-	readme = replaceBlock(readme, 'MIRRORS', buildMirrorBlock(results))
 	readme = applyAvailability(readme, results, manifestByFile)
 
 	await writeFile(readmePath, readme, 'utf8')
@@ -412,7 +326,7 @@ async function updateReadme (results, manifestByFile) {
  *
  * Body layout: any dead sources listed first (outside the main list),
  * then the alive ones sorted fastest → slowest, with the fastest and
- * slowest tagged, then mirror notes if there are any worth mentioning.
+ * slowest tagged.
  * @param {object[]} results
  */
 async function sendReport (results) {
@@ -441,30 +355,6 @@ async function sendReport (results) {
 		return `✅ ${r.name} (${r.ms}ms)${tag}`
 	})
 
-	// Mirror notes. Names here are file-derived (sukebei), matching the rest
-	// of this notification, rather than the manifest's display name
-	// (Sukebei) that README.md uses — the two audiences are different and
-	// the report should be internally consistent.
-	// A source with exactly one configured domain is skipped
-	// entirely — "1 of 1 domains up" is noise that would appear in every
-	// single notification forever. Only a real fallback situation is worth
-	// putting on your phone.
-	const mirrorLines = []
-	for (const r of results) {
-		if (!r.mirrors) continue
-		const { active, checked } = r.mirrors
-		if (checked.length < 2) continue
-
-		const down = checked.filter(c => !c.ok)
-		if (active && down.length === 0) continue  // all mirrors fine, nothing to say
-
-		if (!active) {
-			mirrorLines.push(`🔀 ${r.name}: no domain responding (${checked.length} tried)`)
-		} else {
-			mirrorLines.push(`🔀 ${r.name}: on ${hostOf(active)}; ${down.length} of ${checked.length} domains down`)
-		}
-	}
-
 	const sections = []
 
 	if (dead.length > 0) {
@@ -477,7 +367,6 @@ async function sendReport (results) {
 	}
 
 	if (alive.length > 0) sections.push(aliveLines.join('\n'))
-	if (mirrorLines.length > 0) sections.push(mirrorLines.join('\n'))
 
 	const res = await fetch('https://ntfy.sh/', {
 		method: 'POST',
@@ -510,11 +399,6 @@ for (const file of files) {
 	results.push(result)
 
 	console.log(`${result.alive ? 'PASS' : 'FAIL'} — ${result.displayName}${result.alive ? '' : `: ${result.message}`}`)
-
-	if (result.mirrors) {
-		const { active, checked } = result.mirrors
-		console.log(`       mirrors: ${active ? hostOf(active) : 'NONE WORKING'} (${checked.filter(c => c.ok).length}/${checked.length} up)`)
-	}
 }
 
 await sendReport(results)
