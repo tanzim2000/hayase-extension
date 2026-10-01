@@ -149,23 +149,6 @@
   },
   {
     "manifestVersion": 2,
-    "name": "AnimeTosho",
-    "id": "anime.animetosho",
-    "version": "2.0.0",
-    "description": "ID-based search via AniDB. Mirrors Nyaa and Tokyo Toshokan with high accuracy matching.",
-    "type": "torrent",
-    "accuracy": "high",
-    "updatePeers": true,
-    "ratio": 0,
-    "media": "sub",
-    "languages": ["US", "JP"],
-    "url": "aHR0cHM6Ly9mZWVkLmFuaW1ldG9zaG8ub3Jn",
-    "icon": "https://animetosho.org/inc/favicon.ico",
-    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
-    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/animetosho.js"
-  },
-  {
-    "manifestVersion": 2,
     "name": "SubsPlease",
     "id": "anime.subsplease",
     "version": "2.0.1",
