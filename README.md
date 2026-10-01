@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
-[![Extensions](https://img.shields.io/badge/extensions-10-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
+[![Extensions](https://img.shields.io/badge/extensions-11-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
 [![Sources](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml/badge.svg)](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml)
 
 
@@ -45,6 +45,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | ✅ Yes |
 | **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
 | **AniRena** | Anime tracker that mirrors many Nyaa groups. Returns only the episode you asked for, with real seeders and info hashes. | Sub/Dub | 🇺🇸 🇯🇵 | ✅ Yes |
+| **Mikan** | Anime-only tracker for Chinese fansubs. Understands absolute episode numbers and Chinese season names. No seeder counts. | Sub | 🇨🇳 🇹🇼 🇯🇵 | ✅ Yes |
 | **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ❌ No |
 
 > The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds*. it can't detect whether search results are actually good.
@@ -85,6 +86,11 @@ Some extensions have configurable options, accessible from **Settings → Extens
 | `domain` | Base URL. Override only if AniRena moves domains. | `https://www.anirena.com` |
 | `category` | AniRena category. `anime` = Anime. Leave empty to search every category. | `anime` |
 | `subcategory` | Anime sub-category. `sub-audio` = Subtitle(s) and/or Audio(s), `raw` = RAW, empty = all anime. | `sub-audio` |
+
+#### Mikan
+| Option | Description | Default |
+|---|---|---|
+| `domain` | Base URL. Override only if Mikan moves domains. | `https://mikanani.me` |
 
 #### SubsPlease
 | Option | Description | Default |

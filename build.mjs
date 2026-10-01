@@ -25,6 +25,7 @@ const config = {
     sukebei:    'src/sukebei.js',
     acgrip:     'src/acgrip.js',
     anirena:    'src/anirena.js',
+    mikan:      'src/mikan.js',
   },
 
   // bundle: true — follow all imports and inline them into one file
