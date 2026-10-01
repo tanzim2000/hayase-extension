@@ -4,7 +4,7 @@
 //   node build.mjs          → builds all extensions into dist/ (minified)
 //   node build.mjs --watch  → rebuilds on every save (not minified, easier to read)
 //
-// Output: dist/nyaasi.js, dist/animetosho.js, etc.
+// Output: dist/nyaasi.js, dist/seadex.js, etc.
 // Each output file is fully self-contained — no imports, ready for Hayase to load.
 
 import esbuild from 'esbuild'
