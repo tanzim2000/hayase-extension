@@ -90,6 +90,58 @@ function optionDefaults (entry) {
 }
 
 /**
+ * Wrap fetch so we can see which sites an extension talks to during its check.
+ *
+ * WHY: inside Hayase, extensions run in a browser worker, and Hayase only
+ * switches off the browser's cross-origin blocking for the site written in
+ * each extension's manifest "url" field (base64 in index.json). If test()
+ * fetches a DIFFERENT site than the manifest declares, Hayase blocks it and
+ * the user sees a vague "Failed to fetch" — even though the site is perfectly
+ * alive. This script runs in Node, which has no such blocking, so without
+ * this wrapper it would report that broken extension as healthy.
+ * (This is exactly what happened with a typo'd Tokyo Toshokan url.)
+ *
+ * @returns {{ fetch: typeof fetch, hosts: Set<string> }}
+ */
+function trackedFetch () {
+	const hosts = new Set()
+	const wrapped = (input, init) => {
+		try {
+			const raw = typeof input === 'string' ? input : (input?.url ?? String(input))
+			hosts.add(new URL(raw).host)
+		} catch {
+			// Not a parseable URL — the real fetch below will complain about it.
+		}
+		return fetch(input, init)
+	}
+	return { fetch: wrapped, hosts }
+}
+
+/**
+ * Compare the sites test() fetched against the sites the manifest declares.
+ *
+ * @param {Set<string>} fetchedHosts — hosts seen by trackedFetch()
+ * @param {object[]} entries — manifest entries backed by this file
+ * @returns {string|null} a problem description, or null when everything matches
+ */
+function manifestMismatch (fetchedHosts, entries) {
+	for (const entry of entries) {
+		if (!entry.url) continue
+		let declared
+		try {
+			declared = new URL(atob(entry.url)).host
+		} catch {
+			return `manifest "url" of ${entry.name} is not valid base64 / a valid URL`
+		}
+		const stray = [...fetchedHosts].filter(h => h !== declared)
+		if (stray.length > 0) {
+			return `manifest url of ${entry.name} says ${declared}, but test() fetched ${stray.join(', ')} — Hayase will block that as cross-origin ("Failed to fetch")`
+		}
+	}
+	return null
+}
+
+/**
  * Test one extension file by loading it and calling its test() function,
  * plus its mirrors() function if it has one.
  * @param {string} filename — e.g. "nyaasi.js"
@@ -120,13 +172,21 @@ async function checkExtension (filename, entries = []) {
 	// Step 3 — call test(), timing how long it takes. Each extension's
 	// test() either resolves (alive) or throws a descriptive Error (dead)
 	// — that's the existing convention already used by every file in src/.
+	const tracker = trackedFetch()
 	const start = Date.now()
 	let result
 	try {
-		await extension.test({ fetch }, options)
+		await extension.test({ fetch: tracker.fetch }, options)
 		result = { name, displayName, alive: true, message: 'OK', ms: Date.now() - start, mirrors: null }
 	} catch (err) {
 		result = { name, displayName, alive: false, message: err.message || 'Unknown error', ms: Date.now() - start, mirrors: null }
+	}
+
+	// Step 3b — the site answered, but would Hayase actually let the
+	// extension talk to it? See trackedFetch() for why Node can't tell.
+	if (result.alive) {
+		const mismatch = manifestMismatch(tracker.hosts, entries)
+		if (mismatch) result = { ...result, alive: false, message: mismatch }
 	}
 
 	// Step 4 — if this extension reports mirrors, collect that too. Wrapped
