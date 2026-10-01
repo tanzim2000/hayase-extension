@@ -24,6 +24,7 @@ const config = {
     tokyotosho: 'src/tokyotosho.js',
     sukebei:    'src/sukebei.js',
     acgrip:     'src/acgrip.js',
+    anirena:    'src/anirena.js',
   },
 
   // bundle: true — follow all imports and inline them into one file

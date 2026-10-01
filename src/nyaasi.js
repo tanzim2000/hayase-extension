@@ -179,7 +179,8 @@ function titleMatchesEpisode (title, episode) {
  *   2. The word "batch" or "complete"                → batch
  *   3. Names one episode ("S03E11", "- 09", "[09]",
  *      "E09", "第9话")                                → NOT a batch
- *   4. A bare season tag ("S03", "S3") or "Vol.1"    → batch
+ *   4. A bare season tag ("S03", "S3", "Season 3",
+ *      "3rd Season") or "Vol.1"                      → batch
  *   5. Anything else                                 → NOT a batch
  * Step 3 comes before step 4 so "[SubsPlease] Show S3 - 09" counts as one episode.
  * @param {string} title
@@ -188,10 +189,14 @@ function titleMatchesEpisode (title, episode) {
 function looksLikeBatch (title) {
 	// Remove resolutions ("1080p") and codec-style numbers ("x265", "AAC2.0") first,
 	// so they are not mistaken for episode numbers or ranges
-	const t = title.replace(/\b\d{3,4}p\b/gi, ' ').replace(/\b[xh]\.?26[45]\b/gi, ' ')
+	// and Japanese counters like "100-nin" (100 people) so they are not read as a range
+	const t = title
+		.replace(/\b\d{3,4}p\b/gi, ' ')
+		.replace(/\b[xh]\.?26[45]\b/gi, ' ')
+		.replace(/\b\d{1,3}-nin\b/gi, ' ')
 
 	// 1. Episode range: "01-12", "01 ~ 12", "S03E01-E12"
-	if (/\b\d{1,3}\s*[-~]\s*E?\d{1,3}\b/i.test(t) && !/\b\d{1,3}-nin\b/i.test(t)) return true
+	if (/\b\d{1,3}\s*[-~]\s*E?\d{1,3}\b/i.test(t)) return true
 
 	// 2. Explicit words
 	if (/\b(batch|complete)\b/i.test(t)) return true
@@ -206,8 +211,8 @@ function looksLikeBatch (title) {
 	]
 	if (singleEpisode.some(p => p.test(t))) return false
 
-	// 4. Bare season tag or volume
-	return /\bS\d{1,2}\b|\bvol\.?\s*\d/i.test(t)
+	// 4. Bare season tag ("S03", "Season 3", "3rd Season") or volume, with no episode
+	return /\bS\d{1,2}\b|\bSeason\s*\d{1,2}\b|\b\d{1,2}(?:st|nd|rd|th)\s+Season\b|\bvol\.?\s*\d/i.test(t)
 }
 
 /**
