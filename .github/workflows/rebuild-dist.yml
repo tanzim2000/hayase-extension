@@ -3,6 +3,9 @@
 # Triggers automatically when you push changes to src/, build.mjs,
 # package.json, or this workflow file itself.
 #
+# You can also run it by hand: GitHub repo -> Actions tab ->
+# "Running Compilation of the extensions in /src" -> "Run workflow".
+#
 # What it does:
 #   1. Spins up a Linux machine in the cloud
 #   2. Installs Node.js and esbuild
@@ -14,6 +17,9 @@
 name: Running Compilation of the extensions in /src
 
 on:
+  # Manual run: adds a "Run workflow" button on the Actions tab
+  workflow_dispatch:
+
   push:
     branches: [main]
     paths:
