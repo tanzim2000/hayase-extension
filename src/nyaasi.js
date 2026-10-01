@@ -317,10 +317,11 @@ function parseRSS (xml, { resolution, isBatch, episode }) {
 		// because filterByEpisode() below has already removed the packs.
 		const type = looksLikeBatch(title) ? 'batch' : undefined
 
-		// Episode accuracy: when a specific episode was asked for, everything that
-		// reaches this point matched it, so it is a "high" accuracy result.
-		// (For batch/movie searches there is no episode to check.)
-		const accuracy = 'high'
+		// Nyaa is a keyword search, not an ID lookup, so a raw hit is "low".
+		// Hayase's rule: "high" is only for ID-based matching (AniList/AniDB).
+		// filterByEpisode() upgrades a result to "medium" once its title has been
+		// checked against the requested episode.
+		const accuracy = 'low'
 
 		log.debug('Parsed result', { title, accuracy, type, seeders, leechers, size })
 
@@ -349,9 +350,16 @@ function parseRSS (xml, { resolution, isBatch, episode }) {
  * @param {number} episode
  * @returns {object[]}
  */
-function filterByEpisode (results, episode) {
-	const kept = results.filter(r => r.type !== 'batch' && titleMatchesEpisode(r.title, episode))
-	log.debug('filterByEpisode', { episode, before: results.length, after: kept.length })
+function filterByEpisode (results, episode, absoluteEpisode) {
+	// Hayase gives both the season episode number and the absolute one.
+	// Some groups number by season ("S03E07"), others by absolute ("- 31").
+	const numbers = [episode]
+	if (absoluteEpisode != null && Number(absoluteEpisode) !== Number(episode)) numbers.push(absoluteEpisode)
+
+	const kept = results
+		.filter(r => r.type !== 'batch' && numbers.some(n => titleMatchesEpisode(r.title, n)))
+		.map(r => ({ ...r, accuracy: 'medium' }))   // title checked against the episode
+	log.debug('filterByEpisode', { numbers, before: results.length, after: kept.length })
 	return kept
 }
 
@@ -491,6 +499,11 @@ export default {
 			if (epPadded) {
 				queries.push(applyKeyword(`${title} - ${epPadded}`, keyword))  // e.g. "Frieren - 01 Dubbed"
 				queries.push(applyKeyword(`${title} ${epPadded}`, keyword))    // e.g. "Frieren 01 Dubbed"
+				// Long-running shows are often numbered by absolute episode ("- 1180")
+				const abs = query.absoluteEpisodeNumber
+				if (abs != null && Number(abs) !== Number(query.episode)) {
+					queries.push(applyKeyword(`${title} - ${abs}`, keyword))
+				}
 			}
 			queries.push(applyKeyword(title, keyword))                       // fallback: title only
 		}
@@ -499,7 +512,7 @@ export default {
 		// If Hayase gave us an episode, drop every torrent that is not that episode.
 		// If it did not (rare), keep everything like before.
 		const keep = query.episode != null
-			? results => filterByEpisode(results, query.episode)
+			? results => filterByEpisode(results, query.episode, query.absoluteEpisodeNumber)
 			: results => results.filter(r => r.type !== 'batch')
 
 		const results = await fetchFirstResults(
