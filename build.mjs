@@ -18,7 +18,6 @@ const config = {
   // One entry per extension — esbuild will bundle each independently
   entryPoints: {
     nyaasi:     'src/nyaasi.js',
-    animetosho: 'src/animetosho.js',
     seadex:     'src/seadex.js',
     subsplease: 'src/subsplease.js',
     tokyotosho: 'src/tokyotosho.js',

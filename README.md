@@ -41,7 +41,6 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | **Nyaa (Non-English)** | Nyaa's non-English category. Set your language keyword in options (e.g. `Arabic`, `Hindi`, `Bangla`). | Dub | 🇸🇦 🇪🇬 🇮🇳 🇧🇩 + more | ✅ Yes |
 | **SeaDex** | Community-curated best and alt releases, matched by AniList ID. High accuracy. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
 | **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows, and for batches. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
-| **AnimeTosho** | ID-based search via AniDB. Mirrors Nyaa and Tokyo Toshokan with high accuracy. | Sub | 🇺🇸 🇯🇵 | ❌ No |
 | **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | ✅ Yes |
 | **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
 | **AniRena** | Anime tracker that mirrors many Nyaa groups. Returns only the episode you asked for, with real seeders and info hashes. | Sub/Dub | 🇺🇸 🇯🇵 | ✅ Yes |
@@ -308,7 +307,9 @@ Set the `accuracy` field honestly. Hayase uses it to rank and filter results for
 
 ## Known Issues
 
-None right now. Found a problem? Open an [issue](https://github.com/tanzim2000/hayase-extension/issues).
+- **AnimeTosho was retired.** Its feed stopped indexing new releases in early May 2026 and its own notice says it will be shut down. For anything newer, use Nyaa, AniRena, Mikan, Tokyo Toshokan or SubsPlease. If you still have it installed, you can remove it in Hayase.
+
+Found another problem? Open an [issue](https://github.com/tanzim2000/hayase-extension/issues).
 
 ---
 
