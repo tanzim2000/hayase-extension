@@ -168,7 +168,7 @@
     "manifestVersion": 2,
     "name": "SubsPlease",
     "id": "anime.subsplease",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "Trusted fansub group that simulcasts anime weekly. Consistent, high quality releases.",
     "type": "torrent",
     "accuracy": "medium",
@@ -177,7 +177,7 @@
     "media": "sub",
     "languages": ["US"],
     "url": "aHR0cHM6Ly9zdWJzcGxlYXNlLm9yZw==",
-    "icon": "",
+    "icon": "https://subsplease.org/favicon.ico",
     "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
     "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/subsplease.js",
     "options": {
