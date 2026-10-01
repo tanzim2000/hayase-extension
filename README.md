@@ -29,7 +29,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 ## Extensions
 
 <!-- LAST_CHECKED -->
-> 🕐 Sources last verified: September 28, 2026 at 12:22 UTC
+> 🕐 Sources last verified: October 1, 2026 at 06:37 UTC
 <!-- /LAST_CHECKED -->
 
 ### Torrent Sources
@@ -46,7 +46,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
 | **AniRena** | Anime tracker that mirrors many Nyaa groups. Returns only the episode you asked for, with real seeders and info hashes. | Sub/Dub | 🇺🇸 🇯🇵 | ✅ Yes |
 | **Mikan** | Anime-only tracker for Chinese fansubs. Understands absolute episode numbers and Chinese season names. No seeder counts. | Sub | 🇨🇳 🇹🇼 🇯🇵 | ✅ Yes |
-| **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ❌ No |
+| **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
 
 > The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds*. it can't detect whether search results are actually good.
 
