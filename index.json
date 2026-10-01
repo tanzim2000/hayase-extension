@@ -214,6 +214,40 @@
   },
   {
     "manifestVersion": 2,
+    "name": "AniRena",
+    "id": "anime.anirena",
+    "version": "1.0.0",
+    "description": "Anime tracker that mirrors many Nyaa groups. Only returns the episode you asked for, with real seeders and info hashes. Tries several title spellings and skips look-alike shows.",
+    "type": "torrent",
+    "accuracy": "low",
+    "updatePeers": true,
+    "ratio": 0,
+    "media": "both",
+    "languages": ["US", "JP"],
+    "url": "aHR0cHM6Ly93d3cuYW5pcmVuYS5jb20=",
+    "icon": "https://www.anirena.com/content/images/favicon-32x32.png",
+    "update": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/Tanzim2000/hayase-extension/refs/heads/main/dist/anirena.js",
+    "options": {
+      "domain": {
+        "type": "string",
+        "description": "AniRena base URL. Override only if the site moves domains.",
+        "default": "https://www.anirena.com"
+      },
+      "category": {
+        "type": "string",
+        "description": "AniRena category. anime = Anime. Leave empty to search every category.",
+        "default": "anime"
+      },
+      "subcategory": {
+        "type": "string",
+        "description": "Anime sub-category. sub-audio = Subtitle(s) and/or Audio(s), raw = RAW, empty = all anime.",
+        "default": "sub-audio"
+      }
+    }
+  },
+  {
+    "manifestVersion": 2,
     "name": "Sukebei",
     "id": "anime.sukebei",
     "version": "1.1.0",
