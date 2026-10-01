@@ -40,7 +40,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | **Nyaa (Dub)** | Same as Nyaa but searches for English-dubbed releases. | Dub | 🇺🇸 | ✅ Yes |
 | **Nyaa (Non-English)** | Nyaa's non-English category. Set your language keyword in options (e.g. `Arabic`, `Hindi`, `Bangla`). | Dub | 🇸🇦 🇪🇬 🇮🇳 🇧🇩 + more | ✅ Yes |
 | **SeaDex** | Community-curated best and alt releases, matched by AniList ID. High accuracy. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
-| **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows. | Sub | 🇺🇸 🇯🇵 | ⚠️ Yes\* |
+| **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows, and for batches. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
 | **AnimeTosho** | ID-based search via AniDB. Mirrors Nyaa and Tokyo Toshokan with high accuracy. | Sub | 🇺🇸 🇯🇵 | ❌ No |
 | **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | ✅ Yes |
 | **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
@@ -104,6 +104,11 @@ Some extensions have configurable options, accessible from **Settings → Extens
 | `domains` | Optional fallback mirrors, comma-separated. Tried in order if `domain` doesn't respond. | *(empty)* |
 | `category` | Category: `1_1` = Hentai, `2_2` = Real Life Videos, `0_0` = All. | `1_1` |
 | `filter` | Quality filter. `0` = all, `1` = no remakes, `2` = trusted only. | `0` |
+
+#### Tokyo Toshokan
+| Option | Description | Default |
+|---|---|---|
+| `categories` | Category numbers, comma-separated. `1` = Anime, `11` = Batch, `10` = Non-English, `7` = Raws, `12` = Hentai (Anime). | `1,11` |
 
 ---
 
@@ -302,6 +307,7 @@ Set the `accuracy` field honestly. Hayase uses it to rank and filter results for
 ### Guidelines
 
 - Use `query.fetch` instead of global `fetch` — this is required for CORS to work inside Hayase's sandboxed environment
+- Set the manifest `url` to the exact site your extension fetches from. Hayase only allows cross-origin requests to that site, so a request to any other domain fails with "Failed to fetch". `check-sources.mjs` flags a mismatch.
 - Always handle errors with user-friendly messages (these are shown directly to the user in Hayase)
 - Apply `query.exclusions` to filter out unwanted results
 - Add dev comments explaining non-obvious decisions, especially any trade-offs
@@ -310,7 +316,7 @@ Set the `accuracy` field honestly. Hayase uses it to rank and filter results for
 
 ## Known Issues
 
-- **Tokyo Toshokan**\* is currently not working. See the [Issues](https://github.com/tanzim2000/hayase-extension/issues) section for details and progress.
+None right now. Found a problem? Open an [issue](https://github.com/tanzim2000/hayase-extension/issues).
 
 ---
 

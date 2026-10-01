@@ -312,7 +312,8 @@ function buildMirrorBlock (results) {
 // like Tokyo Toshokan would show a plain "✅ Yes" right above a Known
 // Issues bullet saying it doesn't work. Keep this in sync with that
 // section by hand when you add or resolve an issue.
-const KNOWN_ISSUES = new Set(['Tokyo Toshokan'])
+// Empty right now. Add a manifest name, e.g. new Set(['Tokyo Toshokan']), when needed.
+const KNOWN_ISSUES = new Set([])
 
 /**
  * Rewrite the "Available" cell of every row in the README's Torrent
