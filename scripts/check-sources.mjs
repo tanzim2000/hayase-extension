@@ -12,7 +12,11 @@
 // of README.md from this run's actual results: the "Sources last verified"
 // timestamp and the Available column of the Torrent Sources table.
 
+import { execFile } from 'node:child_process'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { promisify } from 'node:util'
+
+const execFileAsync = promisify(execFile)
 
 // The ntfy topic comes from a GitHub Actions secret, NOT hardcoded here.
 // This repo is public — anyone can read a committed file. If the topic
@@ -74,6 +78,75 @@ function optionDefaults (entry) {
 }
 
 /**
+ * A small fetch() stand-in that makes the request with the curl program.
+ *
+ * WHY: on GitHub's servers, Node's built-in fetch() cannot connect to some
+ * sites (Sukebei, for one) — it times out while setting up the secure
+ * connection — but curl, run on the very same machine, connects in a tenth
+ * of a second. The sites accept curl and drop Node's handshake, which
+ * has nothing to do with whether they work for real users. Using curl here
+ * makes the check measure "is the site up?" instead of "does this site like
+ * Node's handshake?".
+ *
+ * It only supports what the extensions use: GET requests, custom headers,
+ * an abort signal, and reading the body as text or JSON.
+ *
+ * @param {string | URL} url
+ * @param {{ headers?: Record<string, string>, signal?: AbortSignal }} [init]
+ * @returns {Promise<{ ok: boolean, status: number, text: () => Promise<string>, json: () => Promise<any> }>}
+ */
+async function curlFetch (url, init = {}) {
+	// "-w" makes curl print the HTTP status after the body, on its own line.
+	const args = ['-sS', '-L', '--max-time', '20', '-w', '\n%{http_code}']
+	for (const [key, value] of Object.entries(init.headers ?? {})) {
+		args.push('-H', `${key}: ${value}`)
+	}
+	args.push(String(url))
+
+	// If the extension aborts (its own timeout), execFile throws an
+	// AbortError — the same error name real fetch() throws, which the
+	// extensions already know how to handle.
+	let stdout
+	try {
+		({ stdout } = await execFileAsync('curl', args, {
+			maxBuffer: 64 * 1024 * 1024,
+			signal: init.signal,
+		}))
+	} catch (err) {
+		if (err.name === 'AbortError') throw err
+		// Keep only curl's own one-line reason, e.g.
+		// "curl: (6) Could not resolve host: example.invalid"
+		const reason = String(err.stderr || err.message).trim().split('\n').pop()
+		throw new TypeError(`fetch failed (${reason})`)
+	}
+
+	const split = stdout.lastIndexOf('\n')
+	const status = Number(stdout.slice(split + 1))
+	const body = stdout.slice(0, split)
+	return {
+		ok: status >= 200 && status < 300,
+		status,
+		text: async () => body,
+		json: async () => JSON.parse(body),
+	}
+}
+
+/**
+ * Pick the fetch the checks will use: curl if this machine has it,
+ * otherwise Node's own fetch().
+ * @returns {Promise<typeof fetch>}
+ */
+async function pickFetch () {
+	try {
+		await execFileAsync('curl', ['--version'])
+		return curlFetch
+	} catch {
+		console.warn('curl not found — using Node fetch() instead (some sites may time out from GitHub\'s servers)')
+		return fetch
+	}
+}
+
+/**
  * Wrap fetch so we can see which sites an extension talks to during its check.
  *
  * WHY: inside Hayase, extensions run in a browser worker, and Hayase only
@@ -85,9 +158,10 @@ function optionDefaults (entry) {
  * this wrapper it would report that broken extension as healthy.
  * (This is exactly what happened with a typo'd Tokyo Toshokan url.)
  *
+ * @param {typeof fetch} baseFetch — the fetch to call after recording the host
  * @returns {{ fetch: typeof fetch, hosts: Set<string> }}
  */
-function trackedFetch () {
+function trackedFetch (baseFetch) {
 	const hosts = new Set()
 	const wrapped = (input, init) => {
 		try {
@@ -96,7 +170,7 @@ function trackedFetch () {
 		} catch {
 			// Not a parseable URL — the real fetch below will complain about it.
 		}
-		return fetch(input, init)
+		return baseFetch(input, init)
 	}
 	return { fetch: wrapped, hosts }
 }
@@ -155,7 +229,7 @@ async function checkExtension (filename, entries = []) {
 	// Step 3 — call test(), timing how long it takes. Each extension's
 	// test() either resolves (alive) or throws a descriptive Error (dead)
 	// — that's the existing convention already used by every file in src/.
-	const tracker = trackedFetch()
+	const tracker = trackedFetch(checkFetch)
 	const start = Date.now()
 	let result
 	try {
@@ -387,6 +461,7 @@ async function sendReport (results) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────
 
+const checkFetch = await pickFetch()
 const manifestByFile = await loadManifestByFile()
 const files = (await readdir(SRC_DIR)).filter(f => f.endsWith('.js'))
 
