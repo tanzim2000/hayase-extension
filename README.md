@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
-[![Extensions](https://img.shields.io/badge/extensions-11-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
+[![Extensions](https://img.shields.io/badge/extensions-10-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
 [![Sources](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml/badge.svg)](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml)
 
 
