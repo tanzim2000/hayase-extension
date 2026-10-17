@@ -85,32 +85,32 @@ A collection of torrent source extensions for <a href="https://github.com/hayase
 <a href="#installation"><picture>
 	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/INSTALL-1e2327?style=for-the-badge">
 	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/INSTALL-E5E7EB?style=for-the-badge">
-	<img src="https://img.shields.io/badge/INSTALL-1e2327?style=for-the-badge" height="40" alt="Install" />
+	<img src="https://img.shields.io/badge/INSTALL-1e2327?style=for-the-badge" height="36" alt="Install" />
 </picture></a>
 <a href="#extensions"><picture>
 	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/EXTENSIONS-1e2327?style=for-the-badge">
 	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/EXTENSIONS-E5E7EB?style=for-the-badge">
-	<img src="https://img.shields.io/badge/EXTENSIONS-1e2327?style=for-the-badge" height="40" alt="Extensions" />
+	<img src="https://img.shields.io/badge/EXTENSIONS-1e2327?style=for-the-badge" height="36" alt="Extensions" />
 </picture></a>
 <a href="#extension-options"><picture>
 	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/OPTIONS-1e2327?style=for-the-badge">
 	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/OPTIONS-E5E7EB?style=for-the-badge">
-	<img src="https://img.shields.io/badge/OPTIONS-1e2327?style=for-the-badge" height="40" alt="Options" />
+	<img src="https://img.shields.io/badge/OPTIONS-1e2327?style=for-the-badge" height="36" alt="Options" />
 </picture></a>
 <a href="#building-from-source"><picture>
 	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/BUILD-1e2327?style=for-the-badge">
 	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/BUILD-E5E7EB?style=for-the-badge">
-	<img src="https://img.shields.io/badge/BUILD-1e2327?style=for-the-badge" height="40" alt="Build" />
+	<img src="https://img.shields.io/badge/BUILD-1e2327?style=for-the-badge" height="36" alt="Build" />
 </picture></a>
 <a href="#contributing"><picture>
 	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/CONTRIBUTE-1e2327?style=for-the-badge">
 	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/CONTRIBUTE-E5E7EB?style=for-the-badge">
-	<img src="https://img.shields.io/badge/CONTRIBUTE-1e2327?style=for-the-badge" height="40" alt="Contribute" />
+	<img src="https://img.shields.io/badge/CONTRIBUTE-1e2327?style=for-the-badge" height="36" alt="Contribute" />
 </picture></a>
 <a href="#known-issues"><picture>
 	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/KNOWN_ISSUES-1e2327?style=for-the-badge">
 	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/KNOWN_ISSUES-E5E7EB?style=for-the-badge">
-	<img src="https://img.shields.io/badge/KNOWN_ISSUES-1e2327?style=for-the-badge" height="40" alt="Known Issues" />
+	<img src="https://img.shields.io/badge/KNOWN_ISSUES-1e2327?style=for-the-badge" height="36" alt="Known Issues" />
 </picture></a>
 </div>
 
