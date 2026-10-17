@@ -110,44 +110,97 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 
 ### Extension Options
 
-Some extensions have configurable options, accessible from **Settings → Extensions → [Extension Name]**.
+<!-- Each extension gets a collapsed <details> block, in the same order as the table above.
+     The <summary> line lists the option names so people can scan without opening anything.
+     Keep a BLANK LINE after </summary> and before </details>, or the table inside won't render.
+     SeaDex has no options, so it has no block. Keep this section in sync with "options" in index.json. -->
 
-#### Nyaa (Non-English)
-| Option | Description | Default |
-|---|---|---|
-| `keyword` | Language keyword appended to every search query. Set this to your language, e.g. `Arabic`, `Hindi`, `Bangla`. | *(empty)* |
-| `category` | Nyaa category ID. Default is `1_3` (Non-English Translated). | `1_3` |
-| `domain` | Base URL. Change to a mirror if nyaa.si is blocked in your region. | `https://nyaa.si` |
+Some extensions have options you can change under **Settings → Extensions → [Extension Name]**. Click an extension to see its options. SeaDex has none.
 
-#### Nyaa / Nyaa (Dub)
+<details>
+<summary><b>Nyaa</b> &nbsp;·&nbsp; <code>domain</code> <code>filter</code></summary>
+
 | Option | Description | Default |
 |---|---|---|
 | `domain` | Base URL. Change to a mirror if nyaa.si is blocked in your region. | `https://nyaa.si` |
 | `filter` | Quality filter. `0` = all, `1` = no remakes, `2` = trusted only. | `0` |
 
-#### acg.rip
+</details>
+
+<details>
+<summary><b>Nyaa (Dub)</b> &nbsp;·&nbsp; <code>domain</code> <code>filter</code> <code>keyword</code> <code>category</code></summary>
+
+| Option | Description | Default |
+|---|---|---|
+| `domain` | Base URL. Change to a mirror if nyaa.si is blocked in your region. | `https://nyaa.si` |
+| `filter` | Quality filter. `0` = all, `1` = no remakes, `2` = trusted only. | `0` |
+| `keyword` | Keyword appended to every search query. | `Dubbed` |
+| `category` | Nyaa category ID. Default is `1_2` (Anime - English Translated). | `1_2` |
+
+</details>
+
+<details>
+<summary><b>Nyaa (Non-English)</b> &nbsp;·&nbsp; <code>domain</code> <code>filter</code> <code>keyword</code> <code>category</code></summary>
+
+| Option | Description | Default |
+|---|---|---|
+| `domain` | Base URL. Change to a mirror if nyaa.si is blocked in your region. | `https://nyaa.si` |
+| `filter` | Quality filter. `0` = all, `1` = no remakes, `2` = trusted only. | `0` |
+| `keyword` | Language keyword appended to every search query. Set this to your language, e.g. `Arabic`, `Hindi`, `Bangla`. | *(empty)* |
+| `category` | Nyaa category ID. Default is `1_3` (Anime - Non-English Translated). | `1_3` |
+
+</details>
+
+<details>
+<summary><b>Tokyo Toshokan</b> &nbsp;·&nbsp; <code>categories</code></summary>
+
+| Option | Description | Default |
+|---|---|---|
+| `categories` | Category numbers, comma-separated. `1` = Anime, `11` = Batch, `10` = Non-English, `7` = Raws, `12` = Hentai (Anime). | `1,11` |
+
+</details>
+
+<details>
+<summary><b>SubsPlease</b> &nbsp;·&nbsp; <code>resolution</code></summary>
+
+| Option | Description | Default |
+|---|---|---|
+| `resolution` | Preferred resolution: `480`, `720`, or `1080`. Leave empty to use Hayase's setting. | `1080` |
+
+</details>
+
+<details>
+<summary><b>acg.rip</b> &nbsp;·&nbsp; <code>domain</code></summary>
+
 | Option | Description | Default |
 |---|---|---|
 | `domain` | Base URL. Override only if acg.rip moves domains. | `https://acg.rip` |
 
-#### AniRena
+</details>
+
+<details>
+<summary><b>AniRena</b> &nbsp;·&nbsp; <code>domain</code> <code>category</code> <code>subcategory</code></summary>
+
 | Option | Description | Default |
 |---|---|---|
 | `domain` | Base URL. Override only if AniRena moves domains. | `https://www.anirena.com` |
 | `category` | AniRena category. `anime` = Anime. Leave empty to search every category. | `anime` |
 | `subcategory` | Anime sub-category. `sub-audio` = Subtitle(s) and/or Audio(s), `raw` = RAW, empty = all anime. | `sub-audio` |
 
-#### Mikan
+</details>
+
+<details>
+<summary><b>Mikan</b> &nbsp;·&nbsp; <code>domain</code></summary>
+
 | Option | Description | Default |
 |---|---|---|
 | `domain` | Base URL. Override only if Mikan moves domains. | `https://mikanani.me` |
 
-#### SubsPlease
-| Option | Description | Default |
-|---|---|---|
-| `resolution` | Preferred resolution: `480`, `720`, or `1080`. Leave empty to use Hayase's setting. | `1080` |
+</details>
 
-#### Sukebei
+<details>
+<summary><b>Sukebei</b> &nbsp;·&nbsp; <code>domain</code> <code>domains</code> <code>category</code> <code>filter</code></summary>
+
 | Option | Description | Default |
 |---|---|---|
 | `domain` | Sukebei base URL. Tried first. Leave as-is unless the official site is blocked for you. | `https://sukebei.nyaa.si` |
@@ -155,10 +208,7 @@ Some extensions have configurable options, accessible from **Settings → Extens
 | `category` | Category: `1_1` = Hentai, `2_2` = Real Life Videos, `0_0` = All. | `1_1` |
 | `filter` | Quality filter. `0` = all, `1` = no remakes, `2` = trusted only. | `0` |
 
-#### Tokyo Toshokan
-| Option | Description | Default |
-|---|---|---|
-| `categories` | Category numbers, comma-separated. `1` = Anime, `11` = Batch, `10` = Non-English, `7` = Raws, `12` = Hentai (Anime). | `1,11` |
+</details>
 
 ---
 
