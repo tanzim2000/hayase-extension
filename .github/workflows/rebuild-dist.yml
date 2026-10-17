@@ -1,6 +1,6 @@
 # rebuild-dist.yml — GitHub Actions workflow for hayase-extension
 #
-# Triggers automatically when you push changes to src/, build.mjs,
+# Triggers automatically when you push changes to src/, scripts/build.mjs,
 # package.json, or this workflow file itself.
 #
 # You can also run it by hand: GitHub repo -> Actions tab ->
@@ -9,7 +9,7 @@
 # What it does:
 #   1. Spins up a Linux machine in the cloud
 #   2. Installs Node.js and esbuild
-#   3. Runs the build script (node build.mjs)
+#   3. Runs the build script (node scripts/build.mjs)
 #   4. If dist/ changed, commits and pushes the new bundles back to your repo
 #
 # You never need to touch dist/ manually — this bot handles it.
@@ -26,7 +26,7 @@ on:
       # Only trigger when these files change — no point rebuilding for README edits
       - 'src/**'
       - 'package.json'
-      - 'build.mjs'
+      - 'scripts/build.mjs'
       - '.github/workflows/rebuild-dist.yml'
 
 jobs:
