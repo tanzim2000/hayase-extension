@@ -91,9 +91,9 @@ Each result in the returned array should look like:
 
 See the existing source files in `src/` for real examples.
 
-### 2. Register it in `build.mjs`
+### 2. Register it in `scripts/build.mjs`
 
-Open `build.mjs` and add your extension to `entryPoints`:
+Open `scripts/build.mjs` and add your extension to `entryPoints`:
 
 ```js
 entryPoints: {
