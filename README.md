@@ -78,27 +78,38 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 
 ## Extensions
 
-
-<!-- LAST_CHECKED -->
-> 🕐 Sources last verified: October 12, 2026 at 13:53 UTC
-<!-- /LAST_CHECKED -->
+<!-- LIVE DASHBOARD: scripts/check-sources.mjs rewrites two things here on every run.
+     1. Everything between the SOURCE_STATUS markers below (the badge row).
+     2. The LAST cell (Status) of every table row whose first cell has a **bold name**
+        that matches a "name" in index.json.
+     Edit the Description, Media and Languages cells freely: the script never touches them.
+     To add a source: add a row with the icon, the bold name exactly as in index.json, and
+     any placeholder in the Status cell. The next run fills it in.
+     Icons come from Google's favicon service: change "domain=" to the source's site. -->
+<!-- SOURCE_STATUS -->
+<div align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/Sources-10%2F10%20online-22C55E?style=for-the-badge&labelColor=080808"><source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/Sources-10%2F10%20online-22C55E?style=for-the-badge&labelColor=E5E7EB"><img src="https://img.shields.io/badge/Sources-10%2F10%20online-22C55E?style=for-the-badge&labelColor=080808" alt="Sources: 10/10 online" /></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/Last%20check-Oct%2012%2C%202026%20%C2%B7%2013%3A53%20UTC-00FAFA?style=for-the-badge&labelColor=080808"><source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/Last%20check-Oct%2012%2C%202026%20%C2%B7%2013%3A53%20UTC-00FAFA?style=for-the-badge&labelColor=E5E7EB"><img src="https://img.shields.io/badge/Last%20check-Oct%2012%2C%202026%20%C2%B7%2013%3A53%20UTC-00FAFA?style=for-the-badge&labelColor=080808" alt="Last check: Oct 12, 2026 · 13:53 UTC" /></picture>
+</div>
+<!-- /SOURCE_STATUS -->
 
 ### Torrent Sources
 
-| Name | Description | Media | Languages | Available |
+| Source | Description | Media | Languages | Status |
 |---|---|---|---|---|
-| **Nyaa** | Main anime torrent tracker. Sub-focused English releases. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
-| **Nyaa (Dub)** | Same as Nyaa but searches for English-dubbed releases. | Dub | 🇺🇸 | ✅ Yes |
-| **Nyaa (Non-English)** | Nyaa's non-English category. Set your language keyword in options (e.g. `Arabic`, `Hindi`, `Bangla`). | Dub | 🇸🇦 🇪🇬 🇮🇳 🇧🇩 + more | ✅ Yes |
-| **SeaDex** | Community-curated best and alt releases, matched by AniList ID. High accuracy. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
-| **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows, and for batches. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
-| **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | ✅ Yes |
-| **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | ✅ Yes |
-| **AniRena** | Anime tracker that mirrors many Nyaa groups. Returns only the episode you asked for, with real seeders and info hashes. | Sub/Dub | 🇺🇸 🇯🇵 | ✅ Yes |
-| **Mikan** | Anime-only tracker for Chinese fansubs. Understands absolute episode numbers and Chinese season names. No seeder counts. | Sub | 🇨🇳 🇹🇼 🇯🇵 | ✅ Yes |
-| **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | ✅ Yes |
+| <img src="https://www.google.com/s2/favicons?domain=nyaa.si&sz=32" width="16" height="16" alt="" /> **Nyaa** | Main anime torrent tracker. Sub-focused English releases. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=nyaa.si&sz=32" width="16" height="16" alt="" /> **Nyaa (Dub)** | Same as Nyaa but searches for English-dubbed releases. | Dub | 🇺🇸 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=nyaa.si&sz=32" width="16" height="16" alt="" /> **Nyaa (Non-English)** | Nyaa's non-English category. Set your language keyword in options (e.g. `Arabic`, `Hindi`, `Bangla`). | Dub | 🇸🇦 🇪🇬 🇮🇳 🇧🇩 + more | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=releases.moe&sz=32" width="16" height="16" alt="" /> **SeaDex** | Community-curated best and alt releases, matched by AniList ID. High accuracy. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=tokyotosho.info&sz=32" width="16" height="16" alt="" /> **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows, and for batches. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=subsplease.org&sz=32" width="16" height="16" alt="" /> **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=acg.rip&sz=32" width="16" height="16" alt="" /> **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=anirena.com&sz=32" width="16" height="16" alt="" /> **AniRena** | Anime tracker that mirrors many Nyaa groups. Returns only the episode you asked for, with real seeders and info hashes. | Sub/Dub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=mikanani.me&sz=32" width="16" height="16" alt="" /> **Mikan** | Anime-only tracker for Chinese fansubs. Understands absolute episode numbers and Chinese season names. No seeder counts. | Sub | 🇨🇳 🇹🇼 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=sukebei.nyaa.si&sz=32" width="16" height="16" alt="" /> **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 
-> The **Available** column is rewritten automatically by `check-sources.mjs` on every run and reflects whether the source *responds*. it can't detect whether search results are actually good.
+> [!NOTE]
+> The Status column and the badges above are refreshed automatically every week by [`check-sources.mjs`](scripts/check-sources.mjs). **Online** means the source responded, with its response time; it can't tell whether the search results are actually good. Times are measured from GitHub's servers, so yours will differ.
 
 ### Extension Options
 
