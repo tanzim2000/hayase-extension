@@ -78,20 +78,15 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 
 ## Extensions
 
-<!-- LIVE DASHBOARD: scripts/check-sources.mjs rewrites two things here on every run.
-     1. Everything between the SOURCE_STATUS markers below (the badge row).
-     2. The LAST cell (Status) of every table row whose first cell has a **bold name**
-        that matches a "name" in index.json.
-     Edit the Description, Media and Languages cells freely: the script never touches them.
+<!-- LIVE DASHBOARD: a GitHub Actions bot (scripts/check-sources.mjs) rewrites two things
+     in this section on every run:
+       1. The LAST cell (Status) of every table row whose first cell has a **bold name**
+          that matches a "name" in index.json.
+       2. The date between the LAST_CHECKED markers in the note under the table.
+     Edit the Description, Media and Languages cells freely: the bot never touches them.
      To add a source: add a row with the icon, the bold name exactly as in index.json, and
      any placeholder in the Status cell. The next run fills it in.
      Icons come from Google's favicon service: change "domain=" to the source's site. -->
-<!-- SOURCE_STATUS -->
-<div align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/Sources-10%2F10%20online-22C55E?style=for-the-badge&labelColor=080808"><source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/Sources-10%2F10%20online-22C55E?style=for-the-badge&labelColor=E5E7EB"><img src="https://img.shields.io/badge/Sources-10%2F10%20online-22C55E?style=for-the-badge&labelColor=080808" alt="Sources: 10/10 online" /></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/Last%20check-Oct%2012%2C%202026%20%C2%B7%2013%3A53%20UTC-00FAFA?style=for-the-badge&labelColor=080808"><source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/Last%20check-Oct%2012%2C%202026%20%C2%B7%2013%3A53%20UTC-00FAFA?style=for-the-badge&labelColor=E5E7EB"><img src="https://img.shields.io/badge/Last%20check-Oct%2012%2C%202026%20%C2%B7%2013%3A53%20UTC-00FAFA?style=for-the-badge&labelColor=080808" alt="Last check: Oct 12, 2026 · 13:53 UTC" /></picture>
-</div>
-<!-- /SOURCE_STATUS -->
 
 ### Torrent Sources
 
@@ -109,7 +104,9 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | <img src="https://www.google.com/s2/favicons?domain=sukebei.nyaa.si&sz=32" width="16" height="16" alt="" /> **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 
 > [!NOTE]
-> The Status column and the badges above are refreshed automatically every week by [`check-sources.mjs`](scripts/check-sources.mjs). **Online** means the source responded, with its response time; it can't tell whether the search results are actually good. Times are measured from GitHub's servers, so yours will differ.
+> The Status column is refreshed every week by GitHub's bots. **Online** means the source responded, with how long it took. It can't tell whether the search results are actually good, and times are measured from GitHub's servers, so yours may differ.
+>
+> 🕐 Last checked: <!-- LAST_CHECKED -->October 12, 2026 at 13:53 UTC<!-- /LAST_CHECKED -->
 
 ### Extension Options
 
