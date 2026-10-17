@@ -1,0 +1,66 @@
+# source-problem.yml — GitHub issue form for hayase-extension
+#
+# GitHub shows this as a fill-in form (not a blank text box) when someone
+# clicks "New issue". The answers arrive as a tidy issue, so you can see
+# at a glance which source broke and what the person searched for.
+#
+# This file lives in .github/ISSUE_TEMPLATE/ — GitHub finds it by that path.
+
+name: Source problem
+description: A source returns no results, wrong results, or an error.
+title: "[Source]: "
+labels: ["source-problem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check [Known Issues](https://github.com/tanzim2000/hayase-extension#known-issues) first, since the problem may already be listed there.
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Which source?
+      description: These match the names shown in Hayase.
+      options:
+        - Nyaa
+        - Nyaa (Dub)
+        - Nyaa (Non-English)
+        - SeaDex
+        - Tokyo Toshokan
+        - SubsPlease
+        - acg.rip
+        - AniRena
+        - Mikan
+        - Sukebei
+        - Not sure / something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe what you expected and what you got instead.
+      placeholder: "e.g. I searched for episode 5 of Frieren and got no results."
+    validations:
+      required: true
+
+  - type: input
+    id: anime
+    attributes:
+      label: Anime and episode
+      description: The exact title and episode that failed, so I can try it myself.
+      placeholder: "e.g. Sousou no Frieren, episode 5"
+
+  - type: input
+    id: hayase-version
+    attributes:
+      label: Hayase version and platform
+      placeholder: "e.g. Hayase 6.x on Windows 11 / Android / Linux AppImage"
+
+  - type: textarea
+    id: options
+    attributes:
+      label: Custom options (if you changed any)
+      description: For example a different domain or filter in the extension settings.
+      render: text
