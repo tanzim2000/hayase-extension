@@ -15,7 +15,8 @@
 //      deliberately NOT shown there — they're measured from GitHub's
 //      servers, so they say little about what a real user would see.
 //      They only go in the ntfy report.
-//   2. The LAST_CHECKED date in the note under that table.
+//   2. The LAST_CHECKED date in the centered "Last checked" line right
+//      under that table.
 
 import { execFile } from 'node:child_process'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
@@ -269,9 +270,9 @@ async function checkExtension (filename, entries = []) {
  * The markers can sit in the middle of a line, e.g.
  *   > 🕐 Last checked: <!-- LAST_CHECKED -->October 17, 2026<!-- /LAST_CHECKED -->
  * and the new text goes in exactly where the old text was, on the same
- * line. That's what lets the date live inside the note under the table:
- * every line of a GitHub note has to start with ">", so adding line
- * breaks there would break the note apart.
+ * line. That keeps the "Last checked" line (a quote line inside the
+ * centered block under the table) intact: only the date changes, so the
+ * surrounding HTML and quote formatting are never touched.
  *
  * If the markers aren't present the README is returned untouched rather
  * than throwing — a missing block means "this README doesn't want that
