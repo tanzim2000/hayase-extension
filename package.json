@@ -1,13 +1,13 @@
 {
   "name": "hayase-extension",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Hayase extensions by Tanzim2000",
   "private": true,
   "type": "module",
   "main": "index.json",
   "scripts": {
-    "build": "node build.mjs",
-    "watch": "node build.mjs --watch",
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
     "test": "vitest run",
     "test:watch": "vitest"
   },
