@@ -6,8 +6,15 @@
 <img src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:7C3AED,100:2563EB&section=header&text=hayase-extension&fontSize=56&fontColor=ffffff&animation=fadeIn&fontAlignY=38" alt="hayase-extension" />
 
 <!-- ANIMATED SUBTITLE: readme-typing-svg types out each line, pauses, then moves to the next.
-     To change it: "lines=" holds the sentences separated by ";" (spaces are written as "+"). -->
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=20&duration=3000&pause=1200&color=A78BFA&center=true&vCenter=true&width=640&height=40&lines=Torrent+sources+for+Hayase;English+subs+%C2%B7+English+dubs;Non-English+%C2%B7+CJK+fansubs;Nyaa+%C2%B7+SeaDex+%C2%B7+SubsPlease+%C2%B7+acg.rip+%26+more" alt="Torrent sources for Hayase: English subs, English dubs, non-English and CJK fansubs" />
+     To change it: "lines=" holds the sentences separated by ";" (spaces are written as "+").
+     <picture> lets GitHub choose a version by theme: the two URLs are identical except for
+     "color=" (A78BFA light purple for dark mode, 6D28D9 deep purple for light mode).
+     If you edit the lines, change them in BOTH <source> URLs and in the <img> fallback. -->
+<picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=20&duration=3000&pause=1200&color=A78BFA&center=true&vCenter=true&width=640&height=40&lines=Torrent+sources+for+Hayase;English+subs+%C2%B7+English+dubs;Non-English+%C2%B7+CJK+fansubs;Nyaa+%C2%B7+SeaDex+%C2%B7+SubsPlease+%C2%B7+acg.rip+%26+more">
+	<source media="(prefers-color-scheme: light)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=20&duration=3000&pause=1200&color=6D28D9&center=true&vCenter=true&width=640&height=40&lines=Torrent+sources+for+Hayase;English+subs+%C2%B7+English+dubs;Non-English+%C2%B7+CJK+fansubs;Nyaa+%C2%B7+SeaDex+%C2%B7+SubsPlease+%C2%B7+acg.rip+%26+more">
+	<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=20&duration=3000&pause=1200&color=A78BFA&center=true&vCenter=true&width=640&height=40&lines=Torrent+sources+for+Hayase;English+subs+%C2%B7+English+dubs;Non-English+%C2%B7+CJK+fansubs;Nyaa+%C2%B7+SeaDex+%C2%B7+SubsPlease+%C2%B7+acg.rip+%26+more" alt="Torrent sources for Hayase: English subs, English dubs, non-English and CJK fansubs" />
+</picture>
 
 <br />
 
@@ -26,6 +33,10 @@ A collection of torrent source extensions for <a href="https://github.com/hayase
 
 ---
 
+<!-- QUICK-LINK NAV: same badge style as the row above, so the header looks like one design.
+     Each href="#name" must match a heading below, lowercased, with spaces turned into "-".
+     Example: "## Building from Source" -> #building-from-source
+     To change a badge's color, swap 1e2327 for any HEX (e.g. 7C3AED for purple). -->
 <div align="center"><a href="#installation"><img src="https://img.shields.io/badge/INSTALL-1e2327?style=for-the-badge" alt="Install" /></a> <a href="#extensions"><img src="https://img.shields.io/badge/EXTENSIONS-1e2327?style=for-the-badge" alt="Extensions" /></a> <a href="#extension-options"><img src="https://img.shields.io/badge/OPTIONS-1e2327?style=for-the-badge" alt="Options" /></a> <a href="#building-from-source"><img src="https://img.shields.io/badge/BUILD-1e2327?style=for-the-badge" alt="Build" /></a> <a href="#contributing"><img src="https://img.shields.io/badge/CONTRIBUTE-1e2327?style=for-the-badge" alt="Contribute" /></a> <a href="#known-issues"><img src="https://img.shields.io/badge/KNOWN_ISSUES-1e2327?style=for-the-badge" alt="Known Issues" /></a></div>
 
 ---
