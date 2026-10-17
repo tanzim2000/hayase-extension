@@ -10,10 +10,9 @@
 // At the end, sends one full report to ntfy — so you find out even if
 // you're not watching the GitHub Actions tab — and rewrites two parts
 // of README.md (the "dashboard") from this run's actual results:
-//   1. The SOURCE_STATUS block: a row of badges under the Extensions
-//      heading (sources online, last check time, average response, fastest).
-//   2. The Status column of the Torrent Sources table: one colored badge
+//   1. The Status column of the Torrent Sources table: one colored badge
 //      per source ("online · 142 ms", "offline", or "issue · 142 ms").
+//   2. The LAST_CHECKED date in the note under that table.
 
 import { execFile } from 'node:child_process'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
@@ -36,15 +35,11 @@ if (!NTFY_TOPIC) {
 // This script now lives in scripts/, so src/ is one level up.
 const SRC_DIR = new URL('../src/', import.meta.url)
 
-// Dashboard colors, matching the README header (Hayase's own palette).
-// Change them here and the next run repaints the whole dashboard.
+// Status badge colors. Change them here and the next run repaints the table.
 const COLORS = {
-	online: '22C55E',      // green — source responded
-	issue: 'F59E0B',       // amber — responds, but listed in KNOWN_ISSUES below
-	offline: 'FD0000',     // Hayase red — source did not respond
-	info: '00FAFA',        // Hayase cyan — neutral facts (time, speed)
-	labelDark: '080808',   // badge left half in dark mode (Hayase black)
-	labelLight: 'E5E7EB',  // badge left half in light mode (light gray)
+	online: '22C55E',   // green — source responded
+	issue: 'F59E0B',    // amber — responds, but listed in KNOWN_ISSUES below
+	offline: 'FD0000',  // Hayase red — source did not respond
 }
 
 /**
@@ -264,18 +259,24 @@ async function checkExtension (filename, entries = []) {
 }
 
 /**
- * Replace a marked block in README.md.
+ * Replace a marked piece of README.md.
  * Everything between <!-- NAME --> and <!-- /NAME --> is swapped out, and
- * the markers themselves are rewritten too so the block stays replaceable
- * on the next run.
+ * the markers themselves are kept so it stays replaceable on the next run.
+ *
+ * The markers can sit in the middle of a line, e.g.
+ *   > 🕐 Last checked: <!-- LAST_CHECKED -->October 17, 2026<!-- /LAST_CHECKED -->
+ * and the new text goes in exactly where the old text was, on the same
+ * line. That's what lets the date live inside the note under the table:
+ * every line of a GitHub note has to start with ">", so adding line
+ * breaks there would break the note apart.
  *
  * If the markers aren't present the README is returned untouched rather
  * than throwing — a missing block means "this README doesn't want that
  * section", not a broken script.
  *
  * @param {string} readme
- * @param {string} markerName — e.g. "SOURCE_STATUS"
- * @param {string} body — the content to put between the markers
+ * @param {string} markerName — e.g. "LAST_CHECKED"
+ * @param {string} body — the text to put between the markers
  * @returns {string}
  */
 function replaceBlock (readme, markerName, body) {
@@ -284,10 +285,20 @@ function replaceBlock (readme, markerName, body) {
 		console.warn(`  (README has no <!-- ${markerName} --> block — skipping that section)`)
 		return readme
 	}
-	// A function as the replacement, not a string: badge URLs contain "$"-free
-	// text today, but a "$&" or "$1" in a source name would otherwise be read
-	// as a regex back-reference and garble the output.
-	return readme.replace(pattern, () => `<!-- ${markerName} -->\n${body}\n<!-- /${markerName} -->`)
+	// A function as the replacement, not a string: a "$&" or "$1" in the
+	// text would otherwise be read as a regex back-reference and garble it.
+	return readme.replace(pattern, () => `<!-- ${markerName} -->${body}<!-- /${markerName} -->`)
+}
+
+/**
+ * Build the "last checked" date, e.g. "October 17, 2026 at 06:00 UTC".
+ * @returns {string}
+ */
+function buildLastChecked () {
+	const now = new Date()
+	const datePart = now.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+	const timePart = now.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })
+	return `${datePart} at ${timePart} UTC`
 }
 
 // Manifest entries with a known functional problem beyond simple
@@ -305,9 +316,8 @@ const KNOWN_ISSUES = new Set([])
  *
  * shields.io reads "-" as "the next part starts here" and "_" as a space,
  * so a literal dash or underscore has to be doubled ("--", "__"). After
- * that, encodeURIComponent turns spaces into %20, "·" into %C2%B7 and —
- * importantly — commas into %2C. A plain comma would break the badge,
- * because these URLs go inside srcset="", where a comma separates URLs.
+ * that, encodeURIComponent turns spaces into %20 and "·" into %C2%B7,
+ * so the text is safe to drop into a URL.
  *
  * @param {string} text
  * @returns {string}
@@ -323,24 +333,6 @@ function shieldsText (text) {
  */
 function formatMs (ms) {
 	return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`
-}
-
-/**
- * Build one big two-part badge that switches its left half with the
- * viewer's GitHub theme — the same <picture> pattern the README header uses.
- *
- * Everything is on ONE line on purpose: a line break inside <a> or
- * <picture> shows up on GitHub as a small underlined gap next to the badge.
- *
- * @param {string} label — left half, e.g. "Sources"
- * @param {string} message — right half, e.g. "10/10 online"
- * @param {string} color — right half's hex color, no "#"
- * @returns {string} HTML
- */
-function themedBadge (label, message, color) {
-	const base = `https://img.shields.io/badge/${shieldsText(label)}-${shieldsText(message)}-${color}?style=for-the-badge`
-	const alt = `${label}: ${message}`.replace(/"/g, '&quot;')
-	return `<picture><source media="(prefers-color-scheme: dark)" srcset="${base}&labelColor=${COLORS.labelDark}"><source media="(prefers-color-scheme: light)" srcset="${base}&labelColor=${COLORS.labelLight}"><img src="${base}&labelColor=${COLORS.labelDark}" alt="${alt}" /></picture>`
 }
 
 /**
@@ -371,49 +363,6 @@ function statusByEntry (results, manifestByFile) {
 }
 
 /**
- * Build the SOURCE_STATUS block: a centered row of themed badges.
- *
- *   SOURCES       10/10 online   (green / amber when some are down / red when all are)
- *   LAST CHECK    Oct 17, 2026 · 06:00 UTC
- *   AVG RESPONSE  412 ms         (only when at least one source answered)
- *   FASTEST       SubsPlease · 98 ms
- *
- * @param {Map<string, { state: string, ms: number|null }>} statuses
- * @param {object[]} results
- * @returns {string}
- */
-function buildStatusBlock (statuses, results) {
-	const total = statuses.size
-	const up = [...statuses.values()].filter(s => s.state !== 'offline').length
-
-	let sourcesColor = COLORS.online
-	if (up === 0) sourcesColor = COLORS.offline
-	else if (up < total) sourcesColor = COLORS.issue
-
-	const now = new Date()
-	const datePart = now.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
-	const timePart = now.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })
-
-	const badges = [
-		themedBadge('Sources', `${up}/${total} online`, sourcesColor),
-		themedBadge('Last check', `${datePart} · ${timePart} UTC`, COLORS.info),
-	]
-
-	// Speeds are measured per src/ file, so average over the files that
-	// answered, not over the table rows (three Nyaa rows = one measurement).
-	const answered = results.filter(r => r.alive && typeof r.ms === 'number').sort((a, b) => a.ms - b.ms)
-	if (answered.length > 0) {
-		const avg = Math.round(answered.reduce((sum, r) => sum + r.ms, 0) / answered.length)
-		badges.push(themedBadge('Avg response', formatMs(avg), COLORS.info))
-		badges.push(themedBadge('Fastest', `${answered[0].displayName} · ${formatMs(answered[0].ms)}`, COLORS.info))
-	}
-
-	// No blank lines between the badges: a blank line inside the <div>
-	// would end the HTML block and break the row apart.
-	return ['<div align="center">', ...badges, '</div>'].join('\n')
-}
-
-/**
  * Build the small badge that goes in one row's Status cell.
  * @param {{ state: string, ms: number|null }} status
  * @returns {string} HTML
@@ -424,8 +373,8 @@ function statusCell (status) {
 		issue: `issue · ${formatMs(status.ms)}`,
 		offline: 'offline',
 	}[status.state]
-	// A one-part badge: "/badge/<message>-<color>" has no left half at all,
-	// so it needs no theme switching — it reads the same on dark and light.
+	// A one-part badge: "/badge/<message>-<color>" has no gray left half,
+	// just the colored pill — it reads the same on dark and light themes.
 	const url = `https://img.shields.io/badge/${shieldsText(text)}-${COLORS[status.state]}?style=flat-square`
 	return `<img src="${url}" alt="${text}" />`
 }
@@ -480,9 +429,8 @@ async function updateReadme (results, manifestByFile) {
 	const readmePath = new URL('../README.md', import.meta.url)
 	let readme = await readFile(readmePath, 'utf8')
 
-	const statuses = statusByEntry(results, manifestByFile)
-	readme = replaceBlock(readme, 'SOURCE_STATUS', buildStatusBlock(statuses, results))
-	readme = applyStatusColumn(readme, statuses)
+	readme = applyStatusColumn(readme, statusByEntry(results, manifestByFile))
+	readme = replaceBlock(readme, 'LAST_CHECKED', buildLastChecked())
 
 	await writeFile(readmePath, readme, 'utf8')
 }
