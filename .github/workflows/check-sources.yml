@@ -45,8 +45,8 @@ jobs:
           node-version: '24'
 
       # Step 3 — Run every extension's test() function, report to ntfy,
-      # and repaint the README dashboard: the SOURCE_STATUS badge row and
-      # the Status column of the Torrent Sources table
+      # and repaint the README dashboard: the Status column of the
+      # Torrent Sources table and the "Last checked" date under it
       - name: Check all sources
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
