@@ -1,14 +1,32 @@
-# hayase-extension
+<!-- ===== HEADER: everything inside this div is centered ===== -->
+<div align="center">
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
-[![Extensions](https://img.shields.io/badge/extensions-10-orange.svg)](https://github.com/tanzim2000/hayase-extension/blob/main/index.json)
-[![Sources](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml/badge.svg)](https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml)
+<!-- ANIMATED TITLE: capsule-render draws a waving gradient banner that fades the title in.
+     To change it: "text=" is the title, "color=0:HEX,100:HEX" is the gradient (start,end). -->
+<img src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:7C3AED,100:2563EB&section=header&text=hayase-extension&fontSize=56&fontColor=ffffff&animation=fadeIn&fontAlignY=38" alt="hayase-extension" />
 
+<!-- ANIMATED SUBTITLE: readme-typing-svg types out each line, pauses, then moves to the next.
+     To change it: "lines=" holds the sentences separated by ";" (spaces are written as "+"). -->
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=20&duration=3000&pause=1200&color=A78BFA&center=true&vCenter=true&width=640&height=40&lines=Torrent+sources+for+Hayase;English+subs+%C2%B7+English+dubs;Non-English+%C2%B7+CJK+fansubs;Nyaa+%C2%B7+SeaDex+%C2%B7+SubsPlease+%C2%B7+acg.rip+%26+more" alt="Torrent sources for Hayase: English subs, English dubs, non-English and CJK fansubs" />
 
-A collection of torrent source extensions for [Hayase](https://github.com/hayase-app/hayase) — covering English subs, English dubs, non-English languages, and CJK fansubs.
+<br />
+
+<!-- BADGES: shields.io draws them. Each one is a clickable image. -->
+
+<!-- Version (static: update the number by hand when you bump the version) -->
+<a href="https://github.com/tanzim2000/hayase-extension/blob/main/index.json"><img src="https://img.shields.io/badge/version-2.1.0-7C3AED?style=for-the-badge&labelColor=1e2327" alt="Version" /></a> <a href="https://github.com/tanzim2000/hayase-extension/blob/main/index.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftanzim2000%2Fhayase-extension%2Frefs%2Fheads%2Fmain%2Findex.json&query=%24.length&label=extensions&style=for-the-badge&color=2563EB&labelColor=1e2327" alt="Extensions" /></a> <a href="https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml"><img src="https://img.shields.io/github/actions/workflow/status/tanzim2000/hayase-extension/check-sources.yml?style=for-the-badge&label=sources&labelColor=1e2327" alt="Sources status" /></a> <a href="https://github.com/tanzim2000/hayase-extension/stargazers"><img src="https://img.shields.io/github/stars/tanzim2000/hayase-extension?style=for-the-badge&labelColor=1e2327&color=F59E0B" alt="Stars" /></a> <a href="https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge&labelColor=1e2327" alt="MIT License" /></a>
+
+<br />
+<!-- ONE-LINE DESCRIPTION -->
+A collection of torrent source extensions for <a href="https://github.com/hayase-app/hayase">Hayase</a>, covering English subs, English dubs, non-English languages, and CJK fansubs.
+
+</div><br />
 
 > **Disclaimer:** This project is for educational purposes only. It provides source code for search extensions that interface with publicly available torrent indexers. It does not host, distribute, or link to any copyrighted content. Users are solely responsible for ensuring their use complies with applicable laws and the terms of service of any indexer they connect to.
+
+---
+
+<div align="center"><a href="#installation"><img src="https://img.shields.io/badge/INSTALL-1e2327?style=for-the-badge" alt="Install" /></a> <a href="#extensions"><img src="https://img.shields.io/badge/EXTENSIONS-1e2327?style=for-the-badge" alt="Extensions" /></a> <a href="#extension-options"><img src="https://img.shields.io/badge/OPTIONS-1e2327?style=for-the-badge" alt="Options" /></a> <a href="#building-from-source"><img src="https://img.shields.io/badge/BUILD-1e2327?style=for-the-badge" alt="Build" /></a> <a href="#contributing"><img src="https://img.shields.io/badge/CONTRIBUTE-1e2327?style=for-the-badge" alt="Contribute" /></a> <a href="#known-issues"><img src="https://img.shields.io/badge/KNOWN_ISSUES-1e2327?style=for-the-badge" alt="Known Issues" /></a></div>
 
 ---
 
