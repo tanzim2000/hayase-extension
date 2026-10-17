@@ -8,9 +8,12 @@
 // Usage: node scripts/check-sources.mjs
 //
 // At the end, sends one full report to ntfy — so you find out even if
-// you're not watching the GitHub Actions tab — and rewrites two blocks
-// of README.md from this run's actual results: the "Sources last verified"
-// timestamp and the Available column of the Torrent Sources table.
+// you're not watching the GitHub Actions tab — and rewrites two parts
+// of README.md (the "dashboard") from this run's actual results:
+//   1. The SOURCE_STATUS block: a row of badges under the Extensions
+//      heading (sources online, last check time, average response, fastest).
+//   2. The Status column of the Torrent Sources table: one colored badge
+//      per source ("online · 142 ms", "offline", or "issue · 142 ms").
 
 import { execFile } from 'node:child_process'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
@@ -32,6 +35,17 @@ if (!NTFY_TOPIC) {
 // Folder containing all extension source files.
 // This script now lives in scripts/, so src/ is one level up.
 const SRC_DIR = new URL('../src/', import.meta.url)
+
+// Dashboard colors, matching the README header (Hayase's own palette).
+// Change them here and the next run repaints the whole dashboard.
+const COLORS = {
+	online: '22C55E',      // green — source responded
+	issue: 'F59E0B',       // amber — responds, but listed in KNOWN_ISSUES below
+	offline: 'FD0000',     // Hayase red — source did not respond
+	info: '00FAFA',        // Hayase cyan — neutral facts (time, speed)
+	labelDark: '080808',   // badge left half in dark mode (Hayase black)
+	labelLight: 'E5E7EB',  // badge left half in light mode (light gray)
+}
 
 /**
  * Read index.json and group its entries by the src/ file that backs them.
@@ -260,7 +274,7 @@ async function checkExtension (filename, entries = []) {
  * section", not a broken script.
  *
  * @param {string} readme
- * @param {string} markerName — e.g. "LAST_CHECKED"
+ * @param {string} markerName — e.g. "SOURCE_STATUS"
  * @param {string} body — the content to put between the markers
  * @returns {string}
  */
@@ -270,99 +284,184 @@ function replaceBlock (readme, markerName, body) {
 		console.warn(`  (README has no <!-- ${markerName} --> block — skipping that section)`)
 		return readme
 	}
-	return readme.replace(pattern, `<!-- ${markerName} -->\n${body}\n<!-- /${markerName} -->`)
-}
-
-/**
- * Build the "Sources last verified" line.
- * @returns {string}
- */
-function buildTimestampBlock () {
-	const now = new Date()
-	const datePart = now.toLocaleString('en-US', {
-		month: 'long',
-		day: 'numeric',
-		year: 'numeric',
-		timeZone: 'UTC',
-	})
-	const timePart = now.toLocaleString('en-US', {
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false,
-		timeZone: 'UTC',
-	})
-	return `> 🕐 Sources last verified: ${datePart} at ${timePart} UTC`
+	// A function as the replacement, not a string: badge URLs contain "$"-free
+	// text today, but a "$&" or "$1" in a source name would otherwise be read
+	// as a regex back-reference and garble the output.
+	return readme.replace(pattern, () => `<!-- ${markerName} -->\n${body}\n<!-- /${markerName} -->`)
 }
 
 // Manifest entries with a known functional problem beyond simple
 // reachability (see "Known Issues" in README.md). The automated check
 // below only tests whether test() resolves — it can't detect "resolves
 // fine but search results are broken" — so without this list, a source
-// like Tokyo Toshokan would show a plain "✅ Yes" right above a Known
-// Issues bullet saying it doesn't work. Keep this in sync with that
+// like Tokyo Toshokan would show a green "online" badge right above a
+// Known Issues bullet saying it doesn't work. Keep this in sync with that
 // section by hand when you add or resolve an issue.
 // Empty right now. Add a manifest name, e.g. new Set(['Tokyo Toshokan']), when needed.
 const KNOWN_ISSUES = new Set([])
 
 /**
- * Rewrite the "Available" cell of every row in the README's Torrent
- * Sources table, based on this run's actual results — so the table
- * never drifts from reality the way a hand-typed one would.
+ * Make text safe to put inside a shields.io badge URL.
  *
- * Several manifest entries in index.json can share one src/ file (e.g.
- * "Nyaa", "Nyaa (Dub)", and "Nyaa (Non-English)" are all backed by
- * nyaasi.js), so this maps each manifest entry's `code` field back to
- * the src/ filename that was actually tested, then updates every
- * README row whose Name cell matches that manifest entry's `name`.
+ * shields.io reads "-" as "the next part starts here" and "_" as a space,
+ * so a literal dash or underscore has to be doubled ("--", "__"). After
+ * that, encodeURIComponent turns spaces into %20, "·" into %C2%B7 and —
+ * importantly — commas into %2C. A plain comma would break the badge,
+ * because these URLs go inside srcset="", where a comma separates URLs.
  *
- * Only the Available cell is touched — Description/Media/Languages are
+ * @param {string} text
+ * @returns {string}
+ */
+function shieldsText (text) {
+	return encodeURIComponent(text.replace(/-/g, '--').replace(/_/g, '__'))
+}
+
+/**
+ * Turn milliseconds into a short human-readable time: "142 ms" or "1.4 s".
+ * @param {number} ms
+ * @returns {string}
+ */
+function formatMs (ms) {
+	return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`
+}
+
+/**
+ * Build one big two-part badge that switches its left half with the
+ * viewer's GitHub theme — the same <picture> pattern the README header uses.
+ *
+ * Everything is on ONE line on purpose: a line break inside <a> or
+ * <picture> shows up on GitHub as a small underlined gap next to the badge.
+ *
+ * @param {string} label — left half, e.g. "Sources"
+ * @param {string} message — right half, e.g. "10/10 online"
+ * @param {string} color — right half's hex color, no "#"
+ * @returns {string} HTML
+ */
+function themedBadge (label, message, color) {
+	const base = `https://img.shields.io/badge/${shieldsText(label)}-${shieldsText(message)}-${color}?style=for-the-badge`
+	const alt = `${label}: ${message}`.replace(/"/g, '&quot;')
+	return `<picture><source media="(prefers-color-scheme: dark)" srcset="${base}&labelColor=${COLORS.labelDark}"><source media="(prefers-color-scheme: light)" srcset="${base}&labelColor=${COLORS.labelLight}"><img src="${base}&labelColor=${COLORS.labelDark}" alt="${alt}" /></picture>`
+}
+
+/**
+ * Work out the status of every manifest entry (every row of the README
+ * table) from the per-file results.
+ *
+ * Several manifest entries can share one src/ file, so each entry simply
+ * gets its file's result: if nyaasi.js can't reach Nyaa, all three Nyaa
+ * rows are down, and they share one response time.
+ *
+ * @param {object[]} results — one per src/ file, from checkExtension()
+ * @param {Map<string, object[]>} manifestByFile
+ * @returns {Map<string, { state: 'online'|'issue'|'offline', ms: number|null }>} keyed by manifest name
+ */
+function statusByEntry (results, manifestByFile) {
+	const resultByFile = new Map(results.map(r => [r.name, r]))
+	const statuses = new Map()
+	for (const [fileKey, entries] of manifestByFile) {
+		const result = resultByFile.get(fileKey)
+		if (!result) continue
+		for (const entry of entries) {
+			let state = 'offline'
+			if (result.alive) state = KNOWN_ISSUES.has(entry.name) ? 'issue' : 'online'
+			statuses.set(entry.name, { state, ms: result.alive ? result.ms : null })
+		}
+	}
+	return statuses
+}
+
+/**
+ * Build the SOURCE_STATUS block: a centered row of themed badges.
+ *
+ *   SOURCES       10/10 online   (green / amber when some are down / red when all are)
+ *   LAST CHECK    Oct 17, 2026 · 06:00 UTC
+ *   AVG RESPONSE  412 ms         (only when at least one source answered)
+ *   FASTEST       SubsPlease · 98 ms
+ *
+ * @param {Map<string, { state: string, ms: number|null }>} statuses
+ * @param {object[]} results
+ * @returns {string}
+ */
+function buildStatusBlock (statuses, results) {
+	const total = statuses.size
+	const up = [...statuses.values()].filter(s => s.state !== 'offline').length
+
+	let sourcesColor = COLORS.online
+	if (up === 0) sourcesColor = COLORS.offline
+	else if (up < total) sourcesColor = COLORS.issue
+
+	const now = new Date()
+	const datePart = now.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+	const timePart = now.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })
+
+	const badges = [
+		themedBadge('Sources', `${up}/${total} online`, sourcesColor),
+		themedBadge('Last check', `${datePart} · ${timePart} UTC`, COLORS.info),
+	]
+
+	// Speeds are measured per src/ file, so average over the files that
+	// answered, not over the table rows (three Nyaa rows = one measurement).
+	const answered = results.filter(r => r.alive && typeof r.ms === 'number').sort((a, b) => a.ms - b.ms)
+	if (answered.length > 0) {
+		const avg = Math.round(answered.reduce((sum, r) => sum + r.ms, 0) / answered.length)
+		badges.push(themedBadge('Avg response', formatMs(avg), COLORS.info))
+		badges.push(themedBadge('Fastest', `${answered[0].displayName} · ${formatMs(answered[0].ms)}`, COLORS.info))
+	}
+
+	// No blank lines between the badges: a blank line inside the <div>
+	// would end the HTML block and break the row apart.
+	return ['<div align="center">', ...badges, '</div>'].join('\n')
+}
+
+/**
+ * Build the small badge that goes in one row's Status cell.
+ * @param {{ state: string, ms: number|null }} status
+ * @returns {string} HTML
+ */
+function statusCell (status) {
+	const text = {
+		online: `online · ${formatMs(status.ms)}`,
+		issue: `issue · ${formatMs(status.ms)}`,
+		offline: 'offline',
+	}[status.state]
+	// A one-part badge: "/badge/<message>-<color>" has no left half at all,
+	// so it needs no theme switching — it reads the same on dark and light.
+	const url = `https://img.shields.io/badge/${shieldsText(text)}-${COLORS[status.state]}?style=flat-square`
+	return `<img src="${url}" alt="${text}" />`
+}
+
+/**
+ * Rewrite the Status cell (the LAST cell) of every row in the README's
+ * Torrent Sources table, based on this run's actual results — so the
+ * table never drifts from reality the way a hand-typed one would.
+ *
+ * A row is matched by the bold name in its first cell, e.g.
+ *   | <img ... /> **Nyaa (Dub)** | ... | <status badge> |
+ * so the icon in front of the name doesn't get in the way.
+ *
+ * Only the Status cell is touched — Description/Media/Languages are
  * left exactly as a human wrote them.
  *
  * @param {string} readme
- * @param {object[]} results
- * @param {Map<string, object[]>} manifestByFile
+ * @param {Map<string, { state: string, ms: number|null }>} statuses
  * @returns {string}
  */
-function applyAvailability (readme, results, manifestByFile) {
-	// src/ filename (no extension) → alive, straight from this run.
-	const aliveByFile = new Map(results.map(r => [r.name, r.alive]))
-
-	// Manifest display name (e.g. "Nyaa (Dub)") → alive, resolved via
-	// the src/ file that actually backs that manifest entry. Every entry
-	// sharing a file gets that file's result, which is correct: if
-	// nyaasi.js can't reach Nyaa, all three Nyaa rows are down.
-	const aliveByDisplayName = new Map()
-	for (const [fileKey, entries] of manifestByFile) {
-		if (!aliveByFile.has(fileKey)) continue
-		for (const entry of entries) {
-			aliveByDisplayName.set(entry.name, aliveByFile.get(fileKey))
-		}
-	}
-
+function applyStatusColumn (readme, statuses) {
 	return readme.split('\n').map(line => {
 		if (!line.startsWith('|')) return line
 
 		const cells = line.split('|')
-		// A real data row looks like: "", " **Nyaa** ", ..., " ✅ Yes ", ""
-		// — need at least a name cell and an Available cell between the
+		// A real data row looks like: "", " <img/> **Nyaa** ", ..., " <badge> ", ""
+		// — need at least a name cell and a Status cell between the
 		// leading/trailing empties from split().
 		if (cells.length < 4) return line
 
-		const rawName = cells[1].trim().replace(/\*\*/g, '')
-		if (!aliveByDisplayName.has(rawName)) return line
+		const nameMatch = cells[1].match(/\*\*(.+?)\*\*/)
+		if (!nameMatch) return line
+		const status = statuses.get(nameMatch[1].trim())
+		if (!status) return line
 
-		const alive = aliveByDisplayName.get(rawName)
-		let cell
-		if (!alive) {
-			cell = '❌ No'
-		} else if (KNOWN_ISSUES.has(rawName)) {
-			// Reachable, but flagged in Known Issues as not actually
-			// working — say so here instead of a bare, misleading "Yes".
-			cell = '⚠️ Yes\\*'
-		} else {
-			cell = '✅ Yes'
-		}
-		cells[cells.length - 2] = ` ${cell} `
+		cells[cells.length - 2] = ` ${statusCell(status)} `
 		return cells.join('|')
 	}).join('\n')
 }
@@ -370,10 +469,9 @@ function applyAvailability (readme, results, manifestByFile) {
 /**
  * Read README.md once, apply every update, write it back once.
  *
- * Doing both edits in a single read/write is deliberate: the previous
- * version read and wrote the file separately per section, so a crash
- * partway through could leave the README half-updated and internally
- * inconsistent.
+ * Doing both edits in a single read/write is deliberate: reading and
+ * writing the file separately per section means a crash partway through
+ * could leave the README half-updated and internally inconsistent.
  *
  * @param {object[]} results
  * @param {Map<string, object[]>} manifestByFile
@@ -382,8 +480,9 @@ async function updateReadme (results, manifestByFile) {
 	const readmePath = new URL('../README.md', import.meta.url)
 	let readme = await readFile(readmePath, 'utf8')
 
-	readme = replaceBlock(readme, 'LAST_CHECKED', buildTimestampBlock())
-	readme = applyAvailability(readme, results, manifestByFile)
+	const statuses = statusByEntry(results, manifestByFile)
+	readme = replaceBlock(readme, 'SOURCE_STATUS', buildStatusBlock(statuses, results))
+	readme = applyStatusColumn(readme, statuses)
 
 	await writeFile(readmePath, readme, 'utf8')
 }
