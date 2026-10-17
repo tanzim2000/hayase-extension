@@ -1,15 +1,18 @@
-// build.mjs — esbuild bundler script for hayase-extension
+// scripts/build.mjs — esbuild bundler script for hayase-extension
 //
 // Usage:
-//   node build.mjs          → builds all extensions into dist/ (minified)
-//   node build.mjs --watch  → rebuilds on every save (not minified, easier to read)
+//   node scripts/build.mjs          → builds all extensions into dist/ (minified)
+//   node scripts/build.mjs --watch  → rebuilds on every save (not minified, easier to read)
+//
+// Run it from the repo root (npm run build does) — paths below are
+// relative to the root, not to this scripts/ folder.
 //
 // Output: dist/nyaasi.js, dist/seadex.js, etc.
 // Each output file is fully self-contained — no imports, ready for Hayase to load.
 
 import esbuild from 'esbuild'
 
-// Check if --watch flag was passed (e.g. node build.mjs --watch)
+// Check if --watch flag was passed (e.g. node scripts/build.mjs --watch)
 const watch = process.argv.includes('--watch')
 
 // esbuild configuration
