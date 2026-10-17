@@ -1,15 +1,27 @@
 <!-- ===== HEADER: everything inside this div is centered ===== -->
+<!-- THEME-AWARE IMAGES: every image in this header sits inside a <picture> tag.
+     GitHub picks the <source> whose media query matches the viewer's theme:
+       (prefers-color-scheme: dark)  -> dark-mode version
+       (prefers-color-scheme: light) -> light-mode version
+     The <img> at the end is the fallback for places that ignore <picture> (e.g. some apps).
+     When you edit an image, change BOTH <source> URLs and the <img> fallback. -->
 <div align="center">
 
 <!-- ANIMATED TITLE: capsule-render draws a waving gradient banner that fades the title in.
-     To change it: "text=" is the title, "color=0:HEX,100:HEX" is the gradient (start,end). -->
-<img src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:7C3AED,100:2563EB&section=header&text=hayase-extension&fontSize=56&fontColor=ffffff&animation=fadeIn&fontAlignY=38" alt="hayase-extension" />
+     "text=" is the title, "color=0:HEX%2C100:HEX" is the gradient (start,end), "fontColor=" is the text.
+     IMPORTANT: the comma in the gradient MUST be written as %2C. Inside srcset a plain comma
+     splits the URL in two, which breaks the banner (it renders black with no title).
+     Dark:  deep purple -> blue gradient, white text.
+     Light: pastel purple -> pastel blue gradient, deep indigo text. -->
+<picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:7C3AED%2C100:2563EB&section=header&text=hayase-extension&fontSize=56&fontColor=ffffff&animation=fadeIn&fontAlignY=38">
+	<source media="(prefers-color-scheme: light)" srcset="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:C4B5FD%2C100:93C5FD&section=header&text=hayase-extension&fontSize=56&fontColor=312E81&animation=fadeIn&fontAlignY=38">
+	<img src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:7C3AED%2C100:2563EB&section=header&text=hayase-extension&fontSize=56&fontColor=ffffff&animation=fadeIn&fontAlignY=38" alt="hayase-extension" />
+</picture>
 
 <!-- ANIMATED SUBTITLE: readme-typing-svg types out each line, pauses, then moves to the next.
-     To change it: "lines=" holds the sentences separated by ";" (spaces are written as "+").
-     <picture> lets GitHub choose a version by theme: the two URLs are identical except for
-     "color=" (A78BFA light purple for dark mode, 6D28D9 deep purple for light mode).
-     If you edit the lines, change them in BOTH <source> URLs and in the <img> fallback. -->
+     "lines=" holds the sentences separated by ";" (spaces are written as "+").
+     Dark: A78BFA (light purple). Light: 6D28D9 (deep purple). -->
 <picture>
 	<source media="(prefers-color-scheme: dark)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=20&duration=3000&pause=1200&color=A78BFA&center=true&vCenter=true&width=640&height=40&lines=Torrent+sources+for+Hayase;English+subs+%C2%B7+English+dubs;Non-English+%C2%B7+CJK+fansubs;Nyaa+%C2%B7+SeaDex+%C2%B7+SubsPlease+%C2%B7+acg.rip+%26+more">
 	<source media="(prefers-color-scheme: light)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=20&duration=3000&pause=1200&color=6D28D9&center=true&vCenter=true&width=640&height=40&lines=Torrent+sources+for+Hayase;English+subs+%C2%B7+English+dubs;Non-English+%C2%B7+CJK+fansubs;Nyaa+%C2%B7+SeaDex+%C2%B7+SubsPlease+%C2%B7+acg.rip+%26+more">
@@ -18,10 +30,40 @@
 
 <br />
 
-<!-- BADGES: shields.io draws them. Each one is a clickable image. -->
-
-<!-- Version (static: update the number by hand when you bump the version) -->
-<a href="https://github.com/tanzim2000/hayase-extension/blob/main/index.json"><img src="https://img.shields.io/badge/version-2.1.0-7C3AED?style=for-the-badge&labelColor=1e2327" alt="Version" /></a> <a href="https://github.com/tanzim2000/hayase-extension/blob/main/index.json"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftanzim2000%2Fhayase-extension%2Frefs%2Fheads%2Fmain%2Findex.json&query=%24.length&label=extensions&style=for-the-badge&color=2563EB&labelColor=1e2327" alt="Extensions" /></a> <a href="https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml"><img src="https://img.shields.io/github/actions/workflow/status/tanzim2000/hayase-extension/check-sources.yml?style=for-the-badge&label=sources&labelColor=1e2327" alt="Sources status" /></a> <a href="https://github.com/tanzim2000/hayase-extension/stargazers"><img src="https://img.shields.io/github/stars/tanzim2000/hayase-extension?style=for-the-badge&labelColor=1e2327&color=F59E0B" alt="Stars" /></a> <a href="https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge&labelColor=1e2327" alt="MIT License" /></a>
+<!-- BADGES: shields.io draws them. Each one is a clickable, theme-aware image.
+     The only difference between dark and light is "labelColor=" (the left half):
+     Dark: 1e2327 (near-black). Light: E5E7EB (light gray; shields switches the text to dark by itself).
+     <a ...><picture> and </picture></a> stay on the same lines so no stray underlined space appears.
+     Order: Version (static: update the number in all three URLs when you bump it),
+     Extensions (live count from index.json), Sources (live check-sources.yml status),
+     Stars (live), License (static).
+     DO NOT put comments or blank lines between the badges below: either one breaks the row
+     and stacks every badge on its own line. -->
+<a href="https://github.com/tanzim2000/hayase-extension/blob/main/index.json"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/version-2.1.0-7C3AED?style=for-the-badge&labelColor=1e2327">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/version-2.1.0-7C3AED?style=for-the-badge&labelColor=E5E7EB">
+	<img src="https://img.shields.io/badge/version-2.1.0-7C3AED?style=for-the-badge&labelColor=1e2327" alt="Version" />
+</picture></a>
+<a href="https://github.com/tanzim2000/hayase-extension/blob/main/index.json"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftanzim2000%2Fhayase-extension%2Frefs%2Fheads%2Fmain%2Findex.json&query=%24.length&label=extensions&style=for-the-badge&color=2563EB&labelColor=1e2327">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftanzim2000%2Fhayase-extension%2Frefs%2Fheads%2Fmain%2Findex.json&query=%24.length&label=extensions&style=for-the-badge&color=2563EB&labelColor=E5E7EB">
+	<img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftanzim2000%2Fhayase-extension%2Frefs%2Fheads%2Fmain%2Findex.json&query=%24.length&label=extensions&style=for-the-badge&color=2563EB&labelColor=1e2327" alt="Extensions" />
+</picture></a>
+<a href="https://github.com/tanzim2000/hayase-extension/actions/workflows/check-sources.yml"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/actions/workflow/status/tanzim2000/hayase-extension/check-sources.yml?style=for-the-badge&label=sources&labelColor=1e2327">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/actions/workflow/status/tanzim2000/hayase-extension/check-sources.yml?style=for-the-badge&label=sources&labelColor=E5E7EB">
+	<img src="https://img.shields.io/github/actions/workflow/status/tanzim2000/hayase-extension/check-sources.yml?style=for-the-badge&label=sources&labelColor=1e2327" alt="Sources status" />
+</picture></a>
+<a href="https://github.com/tanzim2000/hayase-extension/stargazers"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/stars/tanzim2000/hayase-extension?style=for-the-badge&labelColor=1e2327&color=F59E0B">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/stars/tanzim2000/hayase-extension?style=for-the-badge&labelColor=E5E7EB&color=F59E0B">
+	<img src="https://img.shields.io/github/stars/tanzim2000/hayase-extension?style=for-the-badge&labelColor=1e2327&color=F59E0B" alt="Stars" />
+</picture></a>
+<a href="https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge&labelColor=1e2327">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge&labelColor=E5E7EB">
+	<img src="https://img.shields.io/badge/license-MIT-22C55E?style=for-the-badge&labelColor=1e2327" alt="MIT License" />
+</picture></a>
 
 <br />
 <!-- ONE-LINE DESCRIPTION -->
@@ -33,11 +75,44 @@ A collection of torrent source extensions for <a href="https://github.com/hayase
 
 ---
 
-<!-- QUICK-LINK NAV: same badge style as the row above, so the header looks like one design.
+<!-- QUICK-LINK NAV: same badge style as the header row, theme-aware the same way.
+     Dark: 1e2327 (near-black chip). Light: E5E7EB (light gray chip, dark text).
      Each href="#name" must match a heading below, lowercased, with spaces turned into "-".
      Example: "## Building from Source" -> #building-from-source
-     To change a badge's color, swap 1e2327 for any HEX (e.g. 7C3AED for purple). -->
-<div align="center"><a href="#installation"><img src="https://img.shields.io/badge/INSTALL-1e2327?style=for-the-badge" alt="Install" /></a> <a href="#extensions"><img src="https://img.shields.io/badge/EXTENSIONS-1e2327?style=for-the-badge" alt="Extensions" /></a> <a href="#extension-options"><img src="https://img.shields.io/badge/OPTIONS-1e2327?style=for-the-badge" alt="Options" /></a> <a href="#building-from-source"><img src="https://img.shields.io/badge/BUILD-1e2327?style=for-the-badge" alt="Build" /></a> <a href="#contributing"><img src="https://img.shields.io/badge/CONTRIBUTE-1e2327?style=for-the-badge" alt="Contribute" /></a> <a href="#known-issues"><img src="https://img.shields.io/badge/KNOWN_ISSUES-1e2327?style=for-the-badge" alt="Known Issues" /></a></div>
+     SIZE: height="36" on each <img> scales the chip up (shields default is 28). The badges are
+     SVGs, so they stay sharp at any size. Change all six numbers together to keep them even. -->
+<div align="center">
+<a href="#installation"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/INSTALL-1e2327?style=for-the-badge">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/INSTALL-E5E7EB?style=for-the-badge">
+	<img src="https://img.shields.io/badge/INSTALL-1e2327?style=for-the-badge" height="40" alt="Install" />
+</picture></a>
+<a href="#extensions"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/EXTENSIONS-1e2327?style=for-the-badge">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/EXTENSIONS-E5E7EB?style=for-the-badge">
+	<img src="https://img.shields.io/badge/EXTENSIONS-1e2327?style=for-the-badge" height="40" alt="Extensions" />
+</picture></a>
+<a href="#extension-options"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/OPTIONS-1e2327?style=for-the-badge">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/OPTIONS-E5E7EB?style=for-the-badge">
+	<img src="https://img.shields.io/badge/OPTIONS-1e2327?style=for-the-badge" height="40" alt="Options" />
+</picture></a>
+<a href="#building-from-source"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/BUILD-1e2327?style=for-the-badge">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/BUILD-E5E7EB?style=for-the-badge">
+	<img src="https://img.shields.io/badge/BUILD-1e2327?style=for-the-badge" height="40" alt="Build" />
+</picture></a>
+<a href="#contributing"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/CONTRIBUTE-1e2327?style=for-the-badge">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/CONTRIBUTE-E5E7EB?style=for-the-badge">
+	<img src="https://img.shields.io/badge/CONTRIBUTE-1e2327?style=for-the-badge" height="40" alt="Contribute" />
+</picture></a>
+<a href="#known-issues"><picture>
+	<source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/KNOWN_ISSUES-1e2327?style=for-the-badge">
+	<source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/badge/KNOWN_ISSUES-E5E7EB?style=for-the-badge">
+	<img src="https://img.shields.io/badge/KNOWN_ISSUES-1e2327?style=for-the-badge" height="40" alt="Known Issues" />
+</picture></a>
+</div>
 
 ---
 
