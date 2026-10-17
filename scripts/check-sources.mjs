@@ -11,7 +11,10 @@
 // you're not watching the GitHub Actions tab — and rewrites two parts
 // of README.md (the "dashboard") from this run's actual results:
 //   1. The Status column of the Torrent Sources table: one colored badge
-//      per source ("online · 142 ms", "offline", or "issue · 142 ms").
+//      per source ("online", "offline", or "issue"). Response times are
+//      deliberately NOT shown there — they're measured from GitHub's
+//      servers, so they say little about what a real user would see.
+//      They only go in the ntfy report.
 //   2. The LAST_CHECKED date in the note under that table.
 
 import { execFile } from 'node:child_process'
@@ -327,15 +330,6 @@ function shieldsText (text) {
 }
 
 /**
- * Turn milliseconds into a short human-readable time: "142 ms" or "1.4 s".
- * @param {number} ms
- * @returns {string}
- */
-function formatMs (ms) {
-	return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`
-}
-
-/**
  * Work out the status of every manifest entry (every row of the README
  * table) from the per-file results.
  *
@@ -345,7 +339,7 @@ function formatMs (ms) {
  *
  * @param {object[]} results — one per src/ file, from checkExtension()
  * @param {Map<string, object[]>} manifestByFile
- * @returns {Map<string, { state: 'online'|'issue'|'offline', ms: number|null }>} keyed by manifest name
+ * @returns {Map<string, { state: 'online'|'issue'|'offline' }>} keyed by manifest name
  */
 function statusByEntry (results, manifestByFile) {
 	const resultByFile = new Map(results.map(r => [r.name, r]))
@@ -356,7 +350,7 @@ function statusByEntry (results, manifestByFile) {
 		for (const entry of entries) {
 			let state = 'offline'
 			if (result.alive) state = KNOWN_ISSUES.has(entry.name) ? 'issue' : 'online'
-			statuses.set(entry.name, { state, ms: result.alive ? result.ms : null })
+			statuses.set(entry.name, { state })
 		}
 	}
 	return statuses
@@ -364,19 +358,14 @@ function statusByEntry (results, manifestByFile) {
 
 /**
  * Build the small badge that goes in one row's Status cell.
- * @param {{ state: string, ms: number|null }} status
+ * @param {{ state: string }} status
  * @returns {string} HTML
  */
 function statusCell (status) {
-	const text = {
-		online: `online · ${formatMs(status.ms)}`,
-		issue: `issue · ${formatMs(status.ms)}`,
-		offline: 'offline',
-	}[status.state]
 	// A one-part badge: "/badge/<message>-<color>" has no gray left half,
 	// just the colored pill — it reads the same on dark and light themes.
-	const url = `https://img.shields.io/badge/${shieldsText(text)}-${COLORS[status.state]}?style=flat-square`
-	return `<img src="${url}" alt="${text}" />`
+	const url = `https://img.shields.io/badge/${shieldsText(status.state)}-${COLORS[status.state]}?style=flat-square`
+	return `<img src="${url}" alt="${status.state}" />`
 }
 
 /**
@@ -392,7 +381,7 @@ function statusCell (status) {
  * left exactly as a human wrote them.
  *
  * @param {string} readme
- * @param {Map<string, { state: string, ms: number|null }>} statuses
+ * @param {Map<string, { state: string }>} statuses
  * @returns {string}
  */
 function applyStatusColumn (readme, statuses) {
