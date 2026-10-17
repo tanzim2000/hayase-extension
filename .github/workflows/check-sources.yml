@@ -31,7 +31,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
-    # Give the bot permission to commit the README timestamp back to your repo
+    # Give the bot permission to commit the updated README dashboard back to your repo
     permissions:
       contents: write
 
@@ -45,16 +45,18 @@ jobs:
           node-version: '24'
 
       # Step 3 — Run every extension's test() function, report to ntfy,
-      # and rewrite the "Sources last verified" line in README.md
+      # and repaint the README dashboard: the SOURCE_STATUS badge row and
+      # the Status column of the Torrent Sources table
       - name: Check all sources
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: node scripts/check-sources.mjs
 
-      # Step 4 — Commit the updated README timestamp
+      # Step 4 — Commit the updated README dashboard
       # if: always() is required here — Step 3 exits with a failure code
-      # when a source is down, which would normally skip every step after
-      # it. We still want the timestamp committed either way.
+      # when every source is down, which would normally skip every step
+      # after it. We still want the dashboard committed either way, so the
+      # README shows the outage instead of last week's green badges.
       - name: Commit README if changed
         if: always()
         run: |
