@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 <!-- ===== HEADER: everything inside this div is centered ===== -->
 <!-- COLORS: taken from the Hayase app's splash-screen flash (sampled from a screen recording).
        FD0000  Hayase red (the red half of the glitch logo)
@@ -101,11 +103,14 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | <img src="https://www.google.com/s2/favicons?domain=anirena.com&sz=32" width="16" height="16" alt="" /> **AniRena** | Anime tracker that mirrors many Nyaa groups. Returns only the episode you asked for, with real seeders and info hashes. | Sub/Dub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 | <img src="https://www.google.com/s2/favicons?domain=mikanani.me&sz=32" width="16" height="16" alt="" /> **Mikan** | Anime-only tracker for Chinese fansubs. Understands absolute episode numbers and Chinese season names. No seeder counts. | Sub | 🇨🇳 🇹🇼 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 | <img src="https://www.google.com/s2/favicons?domain=sukebei.nyaa.si&sz=32" width="16" height="16" alt="" /> **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
-
-> [!NOTE]
-> The Status column is refreshed every week by GitHub's bots. **Online** means the source responded, with how long it took. It can't tell whether the search results are actually good, and times are measured from GitHub's servers, so yours may differ.
->
+<div align="center">
+       
 > 🕐 Last checked: <!-- LAST_CHECKED -->October 17, 2026 at 19:34 UTC<!-- /LAST_CHECKED -->
+
+</div>
+
+> [!IMPORTANT]
+> The Status column is refreshed every week by GitHub's bots. **Online** means the source responded, with how long it took. It can't tell whether the search results are actually good, and times are measured from GitHub's servers, so yours may differ.
 
 ### Extension Options
 
@@ -229,17 +234,19 @@ Found another problem? Open an [issue](https://github.com/tanzim2000/hayase-exte
 
 NZB sources like AltHub and NZBGeek require a personal API key to search, which means every user has to register, generate a key, and paste it into the extension settings before it works. That's friction I didn't want to impose.
 
-That said, if you want to add NZB support yourself, contributions are absolutely welcome — see the [Contributing](#contributing) section above.
+That said, if you want to add NZB support yourself, contributions are absolutely welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
 ## Acknowledgements
 
-- **[sinnafuls/hayase-ext](https://github.com/sinnafuls/hayase-ext)** — the project that inspired this one. Several ideas (including acg.rip support and the NZB extension approach) came from looking at his work.
-- **[Claude](https://claude.ai)** (Anthropic) — assisted with architecture decisions, code, and documentation throughout this project.
+- **[sinnafuls/hayase-ext](https://github.com/sinnafuls/hayase-ext)**: the project that inspired this one. Several ideas (including acg.rip support and the NZB extension approach) came from looking at his work.
+- **[Claude](https://claude.ai)** (Anthropic): assisted with architecture decisions, code, and documentation throughout this project.
 
 ---
 
-## License
+<div align="center">
 
-[MIT](https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE) © tanzim2000
+<sub>Released under the [MIT License](https://github.com/tanzim2000/hayase-extension/blob/main/LICENSE) · © tanzim2000</sub>
+
+</div>
