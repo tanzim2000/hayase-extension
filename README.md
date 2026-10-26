@@ -102,10 +102,10 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | <img src="https://www.google.com/s2/favicons?domain=acg.rip&sz=32" width="16" height="16" alt="" /> **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 | <img src="https://www.google.com/s2/favicons?domain=anirena.com&sz=32" width="16" height="16" alt="" /> **AniRena** | Anime tracker that mirrors many Nyaa groups. Returns only the episode you asked for, with real seeders and info hashes. | Sub/Dub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 | <img src="https://www.google.com/s2/favicons?domain=mikanani.me&sz=32" width="16" height="16" alt="" /> **Mikan** | Anime-only tracker for Chinese fansubs. Understands absolute episode numbers and Chinese season names. No seeder counts. | Sub | 🇨🇳 🇹🇼 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
-| <img src="https://www.google.com/s2/favicons?domain=sukebei.nyaa.si&sz=32" width="16" height="16" alt="" /> **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=sukebei.nyaa.si&sz=32" width="16" height="16" alt="" /> **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/offline-FD0000?style=flat-square" alt="offline" /> |
 <div align="center">
        
-> 🕐 Last checked: <!-- LAST_CHECKED -->October 19, 2026 at 12:50 UTC<!-- /LAST_CHECKED -->
+> 🕐 Last checked: <!-- LAST_CHECKED -->October 26, 2026 at 12:42 UTC<!-- /LAST_CHECKED -->
 
 </div>
 
