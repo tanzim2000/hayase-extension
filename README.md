@@ -97,7 +97,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | <img src="https://www.google.com/s2/favicons?domain=nyaa.si&sz=32" width="16" height="16" alt="" /> **Nyaa (Dub)** | Same as Nyaa but searches for English-dubbed releases. | Dub | 🇺🇸 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 | <img src="https://www.google.com/s2/favicons?domain=nyaa.si&sz=32" width="16" height="16" alt="" /> **Nyaa (Non-English)** | Nyaa's non-English category. Set your language keyword in options (e.g. `Arabic`, `Hindi`, `Bangla`). | Dub | 🇸🇦 🇪🇬 🇮🇳 🇧🇩 + more | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 | <img src="https://www.google.com/s2/favicons?domain=releases.moe&sz=32" width="16" height="16" alt="" /> **SeaDex** | Community-curated best and alt releases, matched by AniList ID. High accuracy. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
-| <img src="https://www.google.com/s2/favicons?domain=tokyotosho.info&sz=32" width="16" height="16" alt="" /> **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows, and for batches. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
+| <img src="https://www.google.com/s2/favicons?domain=tokyotosho.info&sz=32" width="16" height="16" alt="" /> **Tokyo Toshokan** | One of the oldest anime indexes. Great for older and classic shows, and for batches. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/offline-FD0000?style=flat-square" alt="offline" /> |
 | <img src="https://www.google.com/s2/favicons?domain=subsplease.org&sz=32" width="16" height="16" alt="" /> **SubsPlease** | Weekly simulcast releases from a trusted fansub group. Consistent, high quality. | Sub | 🇺🇸 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 | <img src="https://www.google.com/s2/favicons?domain=acg.rip&sz=32" width="16" height="16" alt="" /> **acg.rip** | Chinese anime tracker. Great for CJK fansubs not found on Nyaa. | Sub | 🇨🇳 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
 | <img src="https://www.google.com/s2/favicons?domain=anirena.com&sz=32" width="16" height="16" alt="" /> **AniRena** | Anime tracker that mirrors many Nyaa groups. Returns only the episode you asked for, with real seeders and info hashes. | Sub/Dub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/online-22C55E?style=flat-square" alt="online" /> |
@@ -105,7 +105,7 @@ https://raw.githubusercontent.com/tanzim2000/hayase-extension/refs/heads/main/in
 | <img src="https://www.google.com/s2/favicons?domain=sukebei.nyaa.si&sz=32" width="16" height="16" alt="" /> **Sukebei** | Nyaa's adult content sister site. Hentai anime and doujinshi. | Sub | 🇺🇸 🇯🇵 | <img src="https://img.shields.io/badge/offline-FD0000?style=flat-square" alt="offline" /> |
 <div align="center">
        
-> 🕐 Last checked: <!-- LAST_CHECKED -->November 16, 2026 at 15:30 UTC<!-- /LAST_CHECKED -->
+> 🕐 Last checked: <!-- LAST_CHECKED -->November 23, 2026 at 17:53 UTC<!-- /LAST_CHECKED -->
 
 </div>
 
